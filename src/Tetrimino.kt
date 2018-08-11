@@ -64,7 +64,7 @@ data class Tetrimino(val centerOfRotation: Posn, val cells: Array<Cell>) {
      * @param dCol Number of columns to move from the left of the board.
      * @return This Tetrimino translated over dRow and dCol.
      */
-    fun move(dRow: Int, dCol: Int): Tetrimino = Tetrimino(centerOfRotation.translate(dRow.toDouble(), dCol.toDouble()),
+    private fun move(dRow: Int, dCol: Int): Tetrimino = Tetrimino(centerOfRotation.translate(dRow.toDouble(), dCol.toDouble()),
                                                           cells.map { it.move(dRow, dCol) }.toTypedArray())
 
     /**
@@ -127,7 +127,7 @@ data class Tetrimino(val centerOfRotation: Posn, val cells: Array<Cell>) {
  * @param type The type of Tetrimino to produce.
  * @return The corresponding Tetrimino.
  */
-fun initialCells(type: TetriminoType): Tetrimino = when (type) {
+fun initialTetrimino(type: TetriminoType): Tetrimino = when (type) {
     TetriminoType.S ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
                   arrayOf(Cell(Color.GREEN, 0, BOARD_WIDTH / 2),
@@ -148,10 +148,10 @@ fun initialCells(type: TetriminoType): Tetrimino = when (type) {
                           Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2)))
     TetriminoType.L ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                  arrayOf(Cell(Color.DARK_BLUE, 0, BOARD_WIDTH / 2),
-                          Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2),
-                          Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2)))
+                  arrayOf(Cell(Color.ORANGE, 0, BOARD_WIDTH / 2),
+                          Cell(Color.ORANGE, 1, BOARD_WIDTH / 2),
+                          Cell(Color.ORANGE, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(Color.ORANGE, 1, BOARD_WIDTH / 2)))
     TetriminoType.O ->
         Tetrimino(Posn(0.5, (BOARD_WIDTH - 1) / 2.0),
                   arrayOf(Cell(Color.YELLOW, 0, BOARD_WIDTH / 2 - 1),
