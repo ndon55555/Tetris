@@ -58,14 +58,14 @@ class TetriminoTest {
     @Test
     fun notFourCellsTest() {
         expectException(IllegalArgumentException::class, "should have exactly 4 cells") {
-            TetrisTetrimino(Posn(1, 1), arrayOf())
+            Tetrimino(Posn(1, 1), arrayOf())
         }
     }
     
     @Test
     fun nonAdjacentCellsTest() {
         expectException(IllegalArgumentException::class, "should be adjacent with at least 1 other cell") {
-            TetrisTetrimino(
+            Tetrimino(
                 Posn(5, 5),
                 arrayOf(
                     Cell(CellColor.DARK_BLUE, 1, 1),
@@ -80,6 +80,7 @@ class TetriminoTest {
     private fun <T : Throwable> expectException(exceptionClass: KClass<T>, substring: String, block: () -> Unit) {
         val ex = assertFailsWith(exceptionClass) { block() }
         
-        assertTrue(ex.message?.contains(substring) ?: false)
+        assertTrue(ex.message?.contains(substring) ?: false,
+                   String.format("Exception message does not contain: %s", substring))
     }
 }

@@ -1,3 +1,5 @@
+import kotlin.math.abs
+
 /**
  * Represents the different game pieces of a Tetris Game.
  */
@@ -12,14 +14,35 @@ enum class TetriminoType {
  * @property blocks The blocks that compose a Tetrimino.
  */
 data class Tetrimino(val centerOfRotation: Posn, val blocks: Array<Cell>) {
+    init {
+        if (blocks.size != 4) {
+            throw IllegalArgumentException("Tetrimino should have exactly 4 cells")
+        }
+        
+        if (!blocks.allAdjacent()) {
+            throw IllegalArgumentException("Each cell should be adjacent with at least 1 other cell")
+        }
+    }
+    
+    private fun Array<Cell>.allAdjacent(): Boolean {
+        return this.all { c ->
+            this.any {
+                val dx = abs(it.position.x - c.position.x).toInt()
+                val dy = abs(it.position.y - c.position.y).toInt()
+                val manhattanDist = dx + dy
+                manhattanDist == 1
+            }
+        }
+    }
+    
     /**
      * @param dRow Number of rows to move from the top of the board.
      * @param dCol Number of columns to move from the left of the board.
      * @return This Tetrimino translated over dRow and dCol.
      */
     private fun move(dRow: Int, dCol: Int): Tetrimino = Tetrimino(
-            centerOfRotation.translate(dRow.toDouble(), dCol.toDouble()),
-            blocks.map { it.move(dRow, dCol) }.toTypedArray())
+        centerOfRotation.translate(dRow.toDouble(), dCol.toDouble()),
+        blocks.map { it.move(dRow, dCol) }.toTypedArray())
     
     /**
      * @return This Tetrimino translated one row towards the top of the board.
@@ -84,44 +107,44 @@ data class Tetrimino(val centerOfRotation: Posn, val blocks: Array<Cell>) {
 fun initialTetrimino(type: TetriminoType): Tetrimino = when (type) {
     TetriminoType.S ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                  arrayOf(Cell(Color.GREEN, 0, BOARD_WIDTH / 2),
-                          Cell(Color.GREEN, 0, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.GREEN, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.GREEN, 1, BOARD_WIDTH / 2 - 2)))
+                  arrayOf(Cell(CellColor.GREEN, 0, BOARD_WIDTH / 2),
+                          Cell(CellColor.GREEN, 0, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.GREEN, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.GREEN, 1, BOARD_WIDTH / 2 - 2)))
     TetriminoType.Z ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                  arrayOf(Cell(Color.RED, 0, BOARD_WIDTH / 2 - 2),
-                          Cell(Color.RED, 0, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.RED, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.RED, 1, BOARD_WIDTH / 2)))
+                  arrayOf(Cell(CellColor.RED, 0, BOARD_WIDTH / 2 - 2),
+                          Cell(CellColor.RED, 0, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.RED, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.RED, 1, BOARD_WIDTH / 2)))
     TetriminoType.J ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                  arrayOf(Cell(Color.DARK_BLUE, 0, BOARD_WIDTH / 2 - 2),
-                          Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2 - 2),
-                          Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.DARK_BLUE, 1, BOARD_WIDTH / 2)))
+                  arrayOf(Cell(CellColor.DARK_BLUE, 0, BOARD_WIDTH / 2 - 2),
+                          Cell(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2 - 2),
+                          Cell(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2)))
     TetriminoType.L ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                  arrayOf(Cell(Color.ORANGE, 0, BOARD_WIDTH / 2),
-                          Cell(Color.ORANGE, 1, BOARD_WIDTH / 2),
-                          Cell(Color.ORANGE, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.ORANGE, 1, BOARD_WIDTH / 2)))
+                  arrayOf(Cell(CellColor.ORANGE, 0, BOARD_WIDTH / 2),
+                          Cell(CellColor.ORANGE, 1, BOARD_WIDTH / 2),
+                          Cell(CellColor.ORANGE, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.ORANGE, 1, BOARD_WIDTH / 2)))
     TetriminoType.O ->
         Tetrimino(Posn(0.5, (BOARD_WIDTH - 1) / 2.0),
-                  arrayOf(Cell(Color.YELLOW, 0, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.YELLOW, 0, BOARD_WIDTH / 2),
-                          Cell(Color.YELLOW, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.YELLOW, 1, BOARD_WIDTH / 2)))
+                  arrayOf(Cell(CellColor.YELLOW, 0, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.YELLOW, 0, BOARD_WIDTH / 2),
+                          Cell(CellColor.YELLOW, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.YELLOW, 1, BOARD_WIDTH / 2)))
     TetriminoType.I ->
         Tetrimino(Posn(0.5, (BOARD_WIDTH - 1) / 2.0),
-                  arrayOf(Cell(Color.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 2),
-                          Cell(Color.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.LIGHT_BLUE, 0, BOARD_WIDTH / 2),
-                          Cell(Color.LIGHT_BLUE, 0, BOARD_WIDTH / 2 + 1)))
+                  arrayOf(Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 2),
+                          Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2),
+                          Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 + 1)))
     TetriminoType.T ->
         Tetrimino(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                  arrayOf(Cell(Color.PURPLE, 0, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.PURPLE, 1, BOARD_WIDTH / 2 - 2),
-                          Cell(Color.PURPLE, 1, BOARD_WIDTH / 2 - 1),
-                          Cell(Color.PURPLE, 1, BOARD_WIDTH / 2)))
+                  arrayOf(Cell(CellColor.PURPLE, 0, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.PURPLE, 1, BOARD_WIDTH / 2 - 2),
+                          Cell(CellColor.PURPLE, 1, BOARD_WIDTH / 2 - 1),
+                          Cell(CellColor.PURPLE, 1, BOARD_WIDTH / 2)))
 }

@@ -1,4 +1,4 @@
-enum class Color {
+enum class CellColor {
     GREEN, RED, DARK_BLUE, ORANGE, LIGHT_BLUE, YELLOW, PURPLE
 }
 
@@ -8,20 +8,20 @@ enum class Color {
  * @property color The color of the Cell.
  * @property position Where the Cell is (measured from the top left of the board).
  */
-data class Cell(val color: Color, val position: Posn) {
+data class Cell(val color: CellColor, val position: Posn) {
     /**
      * @param color The color of the Cell.
      * @param row Number of rows from the top of the game board.
      * @param col Number of columns from the left of the game board.
      */
-    constructor(color: Color, row: Int, col: Int) : this(color, Posn(row.toDouble(), col.toDouble()))
+    constructor(color: CellColor, row: Int, col: Int) : this(color, Posn(row.toDouble(), col.toDouble()))
     
     /**
      * @param dRow Change in the number of rows from the top.
      * @param dCol Change in the number of columns from the left.
      * @return This Cell translated over dRow and dCol.
      */
-    fun move(dRow: Int, dCol: Int): Cell = Cell(color, position.translate(dCol.toDouble(), dRow.toDouble()))
+    fun move(dRow: Int, dCol: Int): Cell = Cell(color, position.translate(dRow.toDouble(), dCol.toDouble()))
     
     /**
      * @param centerOfRotation The Posn to rotate around.
