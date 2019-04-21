@@ -1,3 +1,4 @@
+import model.Posn
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -11,7 +12,7 @@ class PosnTest {
     private val p6 = Posn(0.0, 3.5) // Positive y-axis
     private val p7 = Posn(-2.5, 0.0) // Negative x-axis
     private val p8 = Posn(0, -7) // Negative y-axis
-    
+
     @Test
     fun translate() {
         assertEquals(Posn(0.1, 0.2), origin.translate(0.1, 0.2))
@@ -24,7 +25,7 @@ class PosnTest {
         assertEquals(Posn(0.5, -5.0), p7.translate(3.0, -5.0))
         assertEquals(Posn(3.1415, -6.0), p8.translate(3.1415, 1.0))
     }
-    
+
     @Test
     fun rotate90CWAround() {
         assertEquals(Posn(0, 0), origin.rotate90CWAround(origin))
@@ -37,7 +38,7 @@ class PosnTest {
         assertEquals(Posn(0.0, 2.5), p7.rotate90CWAround(origin))
         assertEquals(Posn(-7, 0), p8.rotate90CWAround(origin))
     }
-    
+
     @Test
     fun rotate90CCWAround() {
         assertEquals(Posn(0, 0), origin.rotate90CCWAround(origin))

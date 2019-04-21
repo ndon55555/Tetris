@@ -1,3 +1,5 @@
+package view
+
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.scene.control.Label
 import javafx.scene.input.KeyCode
