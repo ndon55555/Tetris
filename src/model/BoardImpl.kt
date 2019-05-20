@@ -1,37 +1,40 @@
 package model
 
 const val BOARD_WIDTH = 10
-const val BOARD_HEIGHT = 20
+const val BOARD_HEIGHT = 18
 
 /**
  * Represents the Tetris game board. Top-left position of the board considered (0, 0).
  * This means that a position at row 0 is "above" a position at row 1.
  *
- * @property lockedCells The Cells that have been dropped on the board by the player.
+ * @property placedCells The Cells that have been dropped on the board by the player.
  */
 class BoardImpl : Board {
-    val lockedCells = mutableSetOf<Cell>()
+    private val placedCells = mutableSetOf<Cell>()
 
-    /**
-     * @param mino The Tetrimino to test.
-     * @return Whether the given Tetrimino is in a valid place in this BoardImpl.
-     */
-    override fun validTetrimino(mino: Tetrimino): Boolean = TODO()
+    override fun placedCells(): Set<Cell> = setOf(*placedCells.toTypedArray())
 
-    /**
-     * @param mino The Tetrimino to place on this BoardImpl.
-     */
-    override fun placeTetrimino(mino: Tetrimino): Unit = TODO()
+    override fun isValidTetrimino(mino: Tetrimino): Boolean = mino.cells().all {
+        it.position.x.toInt() in 0..BOARD_WIDTH
+                && it.position.y.toInt() in 0..BOARD_HEIGHT
+                && !placedCells.contains(it)
+    }
 
-    /**
-     * @param row The row to clear a line on this BoardImpl.
-     */
-    override fun clearLine(row: Int): Unit = TODO()
+    override fun placeTetrimino(mino: Tetrimino) {
+        if (!isValidTetrimino(mino)) {
+            throw IllegalArgumentException("invalid tetrimino for this board")
+        }
 
-    /**
-     * @param row The row where a line was cleared on this BoardImpl.
-     *
-     * Shifts all Cells above the given row down by 1 row.
-     */
-    override fun shiftDownTo(row: Int): Unit = TODO()
+        placedCells += mino.cells()
+    }
+
+    override fun clearLine(row: Int) {
+        placedCells.removeIf { it.position.x.toInt() == row }
+        placedCells.forEach {
+            if (it.position.x < row) {
+                placedCells -= it
+                placedCells += it.move(1, 0)
+            }
+        }
+    }
 }

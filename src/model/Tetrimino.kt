@@ -30,6 +30,11 @@ interface Tetrimino {
      * @return This Tetrimino rotated 90 degress counter-clockwise around its center of rotation.
      */
     fun rotate90CCW(): TetriminoImpl
+
+    /**
+     * @return A copy of this Tetrimino's cells.
+     */
+    fun cells(): Set<Cell>
 }
 
 /**
@@ -45,7 +50,7 @@ enum class TetriminoType {
  * @param type The type of model.TetriminoImpl to produce.
  * @return The corresponding model.TetriminoImpl.
  */
-fun initialTetrimino(type: TetriminoType): Tetrimino = when (type) {
+fun initTetrimino(type: TetriminoType): Tetrimino = when (type) {
     TetriminoType.S ->
         TetriminoImpl(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
                 arrayOf(Cell(CellColor.GREEN, 0, BOARD_WIDTH / 2),

@@ -30,6 +30,8 @@ data class TetriminoImpl(val centerOfRotation: Posn, val blocks: Array<Cell>) : 
         }
     }
 
+    override fun cells(): Set<Cell> = setOf(*blocks)
+
     /**
      * @param dRow Number of rows to move from the top of the board.
      * @param dCol Number of columns to move from the left of the board.
@@ -39,53 +41,28 @@ data class TetriminoImpl(val centerOfRotation: Posn, val blocks: Array<Cell>) : 
             centerOfRotation.translate(dRow.toDouble(), dCol.toDouble()),
             blocks.map { it.move(dRow, dCol) }.toTypedArray())
 
-    /**
-     * @return This TetriminoImpl translated one row towards the top of the board.
-     */
     override fun moveUp(): TetriminoImpl = move(-1, 0)
 
-    /**
-     * @return This TetriminoImpl translated one row away from the top of the board.
-     */
     override fun moveDown(): TetriminoImpl = move(1, 0)
 
-    /**
-     * @return This TetriminoImpl translated one column towards the left of the board.
-     */
     override fun moveLeft(): TetriminoImpl = move(0, -1)
 
-    /**
-     * @return This TetriminoImpl translated one column away from the left of the board.
-     */
     override fun moveRight(): TetriminoImpl = move(0, 1)
 
-    /**
-     * @return This TetriminoImpl rotated 90 degrees clockwise around its center of rotation.
-     */
     override fun rotate90CW(): TetriminoImpl = TetriminoImpl(centerOfRotation, blocks.map {
         it.rotate90CWAround(centerOfRotation)
     }.toTypedArray())
 
-    /**
-     * @return This TetriminoImpl rotated 90 degress counter-clockwise around its center of rotation.
-     */
     override fun rotate90CCW(): TetriminoImpl = TetriminoImpl(centerOfRotation, blocks.map {
         it.rotate90CCWAround(centerOfRotation)
     }.toTypedArray())
 
-    /**
-     * @param other The object to compare to.
-     * @return Decides whether or not this model.TetriminoImpl is equal to the given object.
-     */
     override fun equals(other: Any?): Boolean {
         if (other !is TetriminoImpl) return false
 
         return (this.centerOfRotation == other.centerOfRotation) && (this.blocks.all { it in other.blocks })
     }
 
-    /**
-     * @return The hashcode of this model.TetriminoImpl.
-     */
     override fun hashCode(): Int {
         var hash = 1
         hash *= 31 + this.centerOfRotation.hashCode()

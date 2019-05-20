@@ -3,24 +3,24 @@ package model
 interface Board {
     /**
      * @param mino The Tetrimino to test.
-     * @return Whether the given Tetrimino is in a valid place in this model.BoardImpl.
+     * @return Whether or not the given Tetrimino is in the boundaries of this Board
+     * and not overlapping with another piece.
      */
-    fun validTetrimino(mino: Tetrimino): Boolean
+    fun isValidTetrimino(mino: Tetrimino): Boolean
 
     /**
-     * @param mino The Tetrimino to place on this model.BoardImpl.
+     * @param mino The Tetrimino to place on this Board.
+     * @throws IllegalArgumentException if it isn't possible to place the tetrimino on this Board.
      */
     fun placeTetrimino(mino: Tetrimino)
 
     /**
-     * @param row The row to clear a line on this model.BoardImpl.
+     * @param row The row to clear a line on this Board.
      */
     fun clearLine(row: Int)
 
     /**
-     * @param row The row where a line was cleared on this model.BoardImpl.
-     *
-     * Shifts all Cells above the given row down by 1 row.
+     * @return All the cells that have been placed on the board.
      */
-    fun shiftDownTo(row: Int)
+    fun placedCells(): Set<Cell>
 }

@@ -5,11 +5,12 @@ enum class CellColor {
 }
 
 /**
- * Represents a 1x1 block that is part of a model.TetriminoImpl.
+ * Represents a 1x1 block that is part of a model.TetriminoImpl. (x, y) represents (row, col) of the Cell.
  *
  * @property color The color of the model.Cell.
  * @property position Where the model.Cell is (measured from the top left of the board).
  */
+// TODO break this out into an interface
 data class Cell(val color: CellColor, val position: Posn) {
     /**
      * @param color The color of the model.Cell.
