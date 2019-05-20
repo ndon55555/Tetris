@@ -2,6 +2,8 @@ import model.Cell
 import model.CellColor
 import model.Posn
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class CellTest {
@@ -32,12 +34,12 @@ class CellTest {
 
     @Test
     fun sharesPositionWithTest() {
-        assertEquals(false, c1.sharesPositionWith(c2))
-        assertEquals(false, c2.sharesPositionWith(c3))
-        assertEquals(false, c3.sharesPositionWith(c1))
-        assertEquals(true, c1.sharesPositionWith(c1))
-        assertEquals(true, c2.sharesPositionWith(c2))
-        assertEquals(true, c3.sharesPositionWith(c3))
-        assertEquals(true, c1.sharesPositionWith(Cell(CellColor.YELLOW, 0, 0)))
+        assertFalse(c1.sharesPositionWith(c2))
+        assertFalse(c2.sharesPositionWith(c3))
+        assertFalse(c3.sharesPositionWith(c1))
+        assertTrue(c1.sharesPositionWith(c1))
+        assertTrue(c2.sharesPositionWith(c2))
+        assertTrue(c3.sharesPositionWith(c3))
+        assertTrue(c1.sharesPositionWith(Cell(CellColor.YELLOW, 0, 0)))
     }
 }

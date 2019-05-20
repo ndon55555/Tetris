@@ -14,18 +14,18 @@ class BoardImpl : Board {
 
     override fun placedCells(): Set<Cell> = setOf(*placedCells.toTypedArray())
 
-    override fun isValidTetrimino(mino: Tetrimino): Boolean = mino.cells().all {
+    override fun areValidCells(vararg cells: Cell): Boolean = cells.all {
         it.position.x.toInt() in 0..BOARD_WIDTH
                 && it.position.y.toInt() in 0..BOARD_HEIGHT
-                && !placedCells.contains(it)
+                && placedCells.none { cell -> cell.sharesPositionWith(it) }
     }
 
-    override fun placeTetrimino(mino: Tetrimino) {
-        if (!isValidTetrimino(mino)) {
+    override fun placeCells(vararg cells: Cell) {
+        if (!areValidCells(*cells)) {
             throw IllegalArgumentException("invalid tetrimino for this board")
         }
 
-        placedCells += mino.cells()
+        placedCells += cells
     }
 
     override fun clearLine(row: Int) {
