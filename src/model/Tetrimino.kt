@@ -4,32 +4,32 @@ interface Tetrimino {
     /**
      * @return This Tetrimino translated one row towards the top of the board.
      */
-    fun moveUp(): TetriminoImpl
+    fun moveUp(): Tetrimino
 
     /**
      * @return This Tetrimino translated one row away from the top of the board.
      */
-    fun moveDown(): TetriminoImpl
+    fun moveDown(): Tetrimino
 
     /**
      * @return This Tetrimino translated one column towards the left of the board.
      */
-    fun moveLeft(): TetriminoImpl
+    fun moveLeft(): Tetrimino
 
     /**
      * @return This Tetrimino translated one column away from the left of the board.
      */
-    fun moveRight(): TetriminoImpl
+    fun moveRight(): Tetrimino
 
     /**
      * @return This Tetrimino rotated 90 degrees clockwise around its center of rotation.
      */
-    fun rotate90CW(): TetriminoImpl
+    fun rotate90CW(): Tetrimino
 
     /**
      * @return This Tetrimino rotated 90 degress counter-clockwise around its center of rotation.
      */
-    fun rotate90CCW(): TetriminoImpl
+    fun rotate90CCW(): Tetrimino
 
     /**
      * @return A copy of this Tetrimino's cells.
@@ -47,8 +47,8 @@ enum class TetriminoType {
 /**
  * Factory method for creating a Tetrimino.
  *
- * @param type The type of model.TetriminoImpl to produce.
- * @return The corresponding model.TetriminoImpl.
+ * @param type The type of Tetrimino to produce.
+ * @return The corresponding Tetrimino.
  */
 fun initTetrimino(type: TetriminoType): Tetrimino = when (type) {
     TetriminoType.S ->
