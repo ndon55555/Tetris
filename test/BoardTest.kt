@@ -48,13 +48,13 @@ class BoardTest {
         assertEquals(0, board.placedCells().size)
 
         val cells = arrayOf(
-                Cell(CellColor.RED, Posn(1, 2)),
-                Cell(CellColor.RED, Posn(0, 0))
+                Cell(CellColor.RED, 1, 2),
+                Cell(CellColor.RED, 0, 0)
         )
         board.placeCells(*cells)
         val cells2 =  arrayOf(
-                Cell(CellColor.RED, Posn(2, 5)),
-                Cell(CellColor.RED, Posn(3, 4))
+                Cell(CellColor.RED, 2, 5),
+                Cell(CellColor.RED, 3, 4)
         )
         board.placeCells(*cells2)
         // Placed cells match cells of the original tetriminos
@@ -68,10 +68,10 @@ class BoardTest {
     @Test
     fun clearLineTest() {
         val cells = arrayOf(
-                Cell(CellColor.RED, Posn(1, 0)),
-                Cell(CellColor.RED, Posn(1, 1)),
-                Cell(CellColor.RED, Posn(1, 2)),
-                Cell(CellColor.RED, Posn(0, 2))
+                Cell(CellColor.RED, 1, 0),
+                Cell(CellColor.RED, 1, 1),
+                Cell(CellColor.RED, 1, 2),
+                Cell(CellColor.RED, 0, 2)
         )
         board.placeCells(*cells)
         board.clearLine(1)
@@ -79,7 +79,7 @@ class BoardTest {
         assertEquals(1, board.placedCells().size)
         // All cells above given row are moved down
         assertTrue(board.placedCells().contains(
-                Cell(CellColor.RED, Posn(0, 2)).move(1, 0)
+                Cell(CellColor.RED, 0, 2).move(1, 0)
         ))
     }
 }

@@ -42,4 +42,10 @@ class CellTest {
         assertTrue(c3.sharesPositionWith(c3))
         assertTrue(c1.sharesPositionWith(Cell(CellColor.YELLOW, 0, 0)))
     }
+
+    @Test
+    fun differentColorSharesPositionTest() {
+        val p = Posn(12, 3)
+        assertTrue(Cell(CellColor.RED, p) == Cell(CellColor.PURPLE, p))
+    }
 }

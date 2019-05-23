@@ -64,7 +64,7 @@ class TetriminoTest {
     @Test
     fun notFourCellsTest() {
         expectException(IllegalArgumentException::class, "should have exactly 4 cells") {
-            TetriminoImpl(Posn(1, 1), arrayOf())
+            TetriminoImpl(Posn(1, 1), setOf())
         }
     }
 
@@ -73,7 +73,7 @@ class TetriminoTest {
         expectException(IllegalArgumentException::class, "should be adjacent with at least 1 other cell") {
             TetriminoImpl(
                     Posn(5, 5),
-                    arrayOf(
+                    setOf(
                             Cell(CellColor.DARK_BLUE, 1, 1),
                             Cell(CellColor.DARK_BLUE, 1, 2),
                             Cell(CellColor.DARK_BLUE, 2, 2),
