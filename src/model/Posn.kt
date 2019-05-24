@@ -17,7 +17,7 @@ data class Posn(val x: Double, val y: Double) {
      * @param dX The amount the x-coordinate changes.
      * @param dY The amount the y-coordinate changes.
      *
-     * Moves this model.Posn over the given amounts.
+     * Moves this Posn over the given amounts.
      */
     fun translate(dX: Double, dY: Double): Posn = Posn(x + dX, y + dY)
 
@@ -25,7 +25,7 @@ data class Posn(val x: Double, val y: Double) {
      * @param centerX Center x-coordinate of rotation.
      * @param centerY Center y-coordinate of rotation.
      *
-     * Rotates this model.Posn 90 degrees clockwise around the given central coordinates.
+     * Rotates this Posn 90 degrees clockwise around the given central coordinates.
      */
     fun rotate90CWAround(centerX: Double, centerY: Double): Posn {
         val dX = x - centerX
@@ -35,9 +35,9 @@ data class Posn(val x: Double, val y: Double) {
     }
 
     /**
-     * @param centerOfRotation The model.Posn to rotate around.
+     * @param centerOfRotation The Posn to rotate around.
      *
-     * Rotates this model.Posn 90 degrees clockwise around the given model.Posn.
+     * Rotates this Posn 90 degrees clockwise around the given Posn.
      */
     fun rotate90CWAround(centerOfRotation: Posn): Posn = rotate90CWAround(centerOfRotation.x, centerOfRotation.y)
 
@@ -45,7 +45,7 @@ data class Posn(val x: Double, val y: Double) {
      * @param centerX Center x-coordinate of rotation.
      * @param centerY Center y-coordinate of rotation.
      *
-     * Rotates this model.Posn 90 degrees counter-clockwise around the given central coordinates.
+     * Rotates this Posn 90 degrees counter-clockwise around the given central coordinates.
      */
     fun rotate90CCWAround(centerX: Double, centerY: Double): Posn {
         val dX = x - centerX
@@ -55,9 +55,9 @@ data class Posn(val x: Double, val y: Double) {
     }
 
     /**
-     * @param centerOfRotation The model.Posn to rotate around.
+     * @param centerOfRotation The Posn to rotate around.
      *
-     * Rotates this model.Posn 90 degrees counter-clockwise around the given model.Posn.
+     * Rotates this Posn 90 degrees counter-clockwise around the given Posn.
      */
     fun rotate90CCWAround(centerOfRotation: Posn): Posn = rotate90CCWAround(centerOfRotation.x, centerOfRotation.y)
 }

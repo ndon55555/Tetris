@@ -22,5 +22,5 @@ interface Board {
     /**
      * @return All the cells that have been placed on the board.
      */
-    fun placedCells(): Set<Cell>
+    fun getPlacedCells(): Set<Cell>
 }

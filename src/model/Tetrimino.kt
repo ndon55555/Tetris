@@ -53,44 +53,44 @@ enum class TetriminoType {
 fun initTetrimino(type: TetriminoType): Tetrimino = when (type) {
     TetriminoType.S ->
         TetriminoImpl(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                setOf(Cell(CellColor.GREEN, 0, BOARD_WIDTH / 2),
-                        Cell(CellColor.GREEN, 0, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.GREEN, 1, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.GREEN, 1, BOARD_WIDTH / 2 - 2)))
+                setOf(CellImpl(CellColor.GREEN, 0, BOARD_WIDTH / 2),
+                        CellImpl(CellColor.GREEN, 0, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.GREEN, 1, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.GREEN, 1, BOARD_WIDTH / 2 - 2)))
     TetriminoType.Z ->
         TetriminoImpl(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                setOf(Cell(CellColor.RED, 0, BOARD_WIDTH / 2 - 2),
-                        Cell(CellColor.RED, 0, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.RED, 1, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.RED, 1, BOARD_WIDTH / 2)))
+                setOf(CellImpl(CellColor.RED, 0, BOARD_WIDTH / 2 - 2),
+                        CellImpl(CellColor.RED, 0, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.RED, 1, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.RED, 1, BOARD_WIDTH / 2)))
     TetriminoType.J ->
         TetriminoImpl(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                setOf(Cell(CellColor.DARK_BLUE, 0, BOARD_WIDTH / 2 - 2),
-                        Cell(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2 - 2),
-                        Cell(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2)))
+                setOf(CellImpl(CellColor.DARK_BLUE, 0, BOARD_WIDTH / 2 - 2),
+                        CellImpl(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2 - 2),
+                        CellImpl(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.DARK_BLUE, 1, BOARD_WIDTH / 2)))
     TetriminoType.L ->
         TetriminoImpl(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                setOf(Cell(CellColor.ORANGE, 0, BOARD_WIDTH / 2),
-                        Cell(CellColor.ORANGE, 1, BOARD_WIDTH / 2),
-                        Cell(CellColor.ORANGE, 1, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.ORANGE, 1, BOARD_WIDTH / 2)))
+                setOf(CellImpl(CellColor.ORANGE, 0, BOARD_WIDTH / 2),
+                        CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2),
+                        CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2)))
     TetriminoType.O ->
         TetriminoImpl(Posn(0.5, (BOARD_WIDTH - 1) / 2.0),
-                setOf(Cell(CellColor.YELLOW, 0, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.YELLOW, 0, BOARD_WIDTH / 2),
-                        Cell(CellColor.YELLOW, 1, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.YELLOW, 1, BOARD_WIDTH / 2)))
+                setOf(CellImpl(CellColor.YELLOW, 0, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.YELLOW, 0, BOARD_WIDTH / 2),
+                        CellImpl(CellColor.YELLOW, 1, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.YELLOW, 1, BOARD_WIDTH / 2)))
     TetriminoType.I ->
         TetriminoImpl(Posn(0.5, (BOARD_WIDTH - 1) / 2.0),
-                setOf(Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 2),
-                        Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2),
-                        Cell(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 + 1)))
+                setOf(CellImpl(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 2),
+                        CellImpl(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2),
+                        CellImpl(CellColor.LIGHT_BLUE, 0, BOARD_WIDTH / 2 + 1)))
     TetriminoType.T ->
         TetriminoImpl(Posn(1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-                setOf(Cell(CellColor.PURPLE, 0, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.PURPLE, 1, BOARD_WIDTH / 2 - 2),
-                        Cell(CellColor.PURPLE, 1, BOARD_WIDTH / 2 - 1),
-                        Cell(CellColor.PURPLE, 1, BOARD_WIDTH / 2)))
+                setOf(CellImpl(CellColor.PURPLE, 0, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.PURPLE, 1, BOARD_WIDTH / 2 - 2),
+                        CellImpl(CellColor.PURPLE, 1, BOARD_WIDTH / 2 - 1),
+                        CellImpl(CellColor.PURPLE, 1, BOARD_WIDTH / 2)))
 }

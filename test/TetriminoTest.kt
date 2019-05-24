@@ -1,5 +1,5 @@
-import model.Cell
 import model.CellColor
+import model.CellImpl
 import model.Posn
 import model.TetriminoImpl
 import model.TetriminoType
@@ -74,10 +74,10 @@ class TetriminoTest {
             TetriminoImpl(
                     Posn(5, 5),
                     setOf(
-                            Cell(CellColor.DARK_BLUE, 1, 1),
-                            Cell(CellColor.DARK_BLUE, 1, 2),
-                            Cell(CellColor.DARK_BLUE, 2, 2),
-                            Cell(CellColor.DARK_BLUE, 3, 3)
+                            CellImpl(CellColor.DARK_BLUE, 1, 1),
+                            CellImpl(CellColor.DARK_BLUE, 1, 2),
+                            CellImpl(CellColor.DARK_BLUE, 2, 2),
+                            CellImpl(CellColor.DARK_BLUE, 3, 3)
                     )
             )
         }
