@@ -14,14 +14,13 @@ import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 
 class ControllerImpl : Controller(), TetrisController {
-    private val timer = Timer()
+    private lateinit var timer: Timer
     private lateinit var board: Board
     private lateinit var view: TetrisUI
     private val boardLock = Any()
     private val viewLock = Any()
     private var isRunning = false
-
-    var activePiece: Tetrimino = generateTetrimino()
+    private lateinit var activePiece: Tetrimino
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
@@ -33,8 +32,7 @@ class ControllerImpl : Controller(), TetrisController {
                 KeyCode.LEFT -> activePiece = activePiece.onTheBoard { moveLeft() }
                 KeyCode.RIGHT -> activePiece = activePiece.onTheBoard { moveRight() }
                 KeyCode.SHIFT -> println("hold")
-                else -> {
-                }
+                else -> return
             }
 
             synchronized(viewLock) {
@@ -48,6 +46,8 @@ class ControllerImpl : Controller(), TetrisController {
         this.isRunning = true
         this.board = board
         this.view = view
+        this.timer = Timer()
+        this.activePiece = generateTetrimino()
         timer.scheduleAtFixedRate(0, 750) {
             val next = activePiece.onTheBoard { moveDown() }
             if (activePiece == next) {
@@ -73,9 +73,7 @@ class ControllerImpl : Controller(), TetrisController {
 
     private fun Tetrimino.onTheBoard(op: Tetrimino.() -> Tetrimino): Tetrimino {
         val next = this.op()
-        if (next.isValid()) {
-            return next
-        }
+        if (next.isValid()) return next
 
         return this
     }
@@ -86,10 +84,7 @@ class ControllerImpl : Controller(), TetrisController {
 
     private fun Tetrimino.hardDrop(): Tetrimino {
         var t = this
-        while (t.moveDown().isValid()) {
-            t = t.moveDown()
-        }
-
+        while (t.moveDown().isValid()) t = t.moveDown()
         t.placeOnBoard()
         t.clearCompletedLines()
         return newActivePiece()

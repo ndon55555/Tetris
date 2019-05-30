@@ -14,9 +14,11 @@ import model.Cell
 import model.CellColor
 import tornadofx.App
 import tornadofx.View
+import tornadofx.action
+import tornadofx.button
+import tornadofx.clear
 import tornadofx.gridpane
-import tornadofx.pane
-import tornadofx.rectangle
+import tornadofx.hbox
 import tornadofx.replaceChildren
 import tornadofx.row
 
@@ -31,15 +33,31 @@ class BoardView : View("Tetris"), TetrisUI {
     private val controller: ControllerImpl by inject()
     private val boardWidth = BOARD_WIDTH
     private val boardHeight = BOARD_HEIGHT
+    private lateinit var grid: GridPane
 
-    override val root = pane {
-        gridpane {
-            repeat(boardHeight) {
-                row {
-                    repeat(boardWidth) {
-                        add(backgroundCell())
+    override val root = with(this) {
+        val view = this
+        hbox {
+            gridpane {
+                repeat(boardHeight) {
+                    row {
+                        repeat(boardWidth) {
+                            add(backgroundCell())
+                        }
                     }
                 }
+
+                grid = this
+                requestFocus()
+            }
+
+            button("Restart") {
+                action {
+                    controller.stop()
+                    controller.run(BoardImpl(), view)
+                }
+
+                isFocusTraversable = false
             }
         }
     }
@@ -60,17 +78,15 @@ class BoardView : View("Tetris"), TetrisUI {
 
     override fun drawCells(cells: Set<Cell>) {
         Platform.runLater {
-            val grid = GridPane()
-
             with(grid) {
+                clear()
+
                 for (row in 0 until boardHeight) {
                     for (col in 0 until boardWidth) add(backgroundCell(), col, row)
                 }
 
                 for (c in cells) add(foregroundCell(c), c.col, c.row)
             }
-
-            root.replaceChildren(grid)
         }
     }
 
@@ -85,7 +101,7 @@ internal fun backgroundCell(): Rectangle =
 internal fun foregroundCell(c: Cell): Rectangle =
         Rectangle(CELL_SIZE, CELL_SIZE, getPaint(c.color)).also { it.stroke = Paint.valueOf("grey") }
 
-internal fun getPaint(c: CellColor): Paint = when(c) {
+internal fun getPaint(c: CellColor): Paint = when (c) {
     CellColor.GREEN -> Paint.valueOf("green")
     CellColor.RED -> Paint.valueOf("red")
     CellColor.DARK_BLUE -> Paint.valueOf("blue")
