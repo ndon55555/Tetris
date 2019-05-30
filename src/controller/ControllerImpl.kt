@@ -9,6 +9,7 @@ import model.TetriminoType
 import model.initTetrimino
 import tornadofx.Controller
 import view.TetrisUI
+import java.util.Random
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 
@@ -20,11 +21,9 @@ class ControllerImpl : Controller(), TetrisController {
     private val viewLock = Any()
 
     var activePiece: Tetrimino = generateTetrimino()
-    var i = 0
 
     private fun generateTetrimino(): Tetrimino {
-        i = (i + 1) % 6
-        return when (i) {
+        return when (Random().nextInt(6)) {
             0 -> initTetrimino(TetriminoType.L)
             1 -> initTetrimino(TetriminoType.T)
             2 -> initTetrimino(TetriminoType.S)
@@ -65,10 +64,17 @@ class ControllerImpl : Controller(), TetrisController {
 
                 synchronized(boardLock) {
                     board.placeCells(*curCells)
+
+                    val candidateLines = curCells.map { it.row }.distinct().sorted()
+                    for (line in candidateLines) {
+                        if (board.getPlacedCells().filter { it.row == line }.size == 10) {
+                            board.clearLine(line)
+                        }
+                    }
                 }
 
                 val newPiece = generateTetrimino()
-                if (newPiece.isValid()) {
+                if (newPiece.isValid()) { // check for topping out
                     activePiece = newPiece
                 } else {
                     stop()

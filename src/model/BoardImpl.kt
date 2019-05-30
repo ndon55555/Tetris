@@ -29,11 +29,16 @@ class BoardImpl : Board {
 
     override fun clearLine(row: Int) {
         placedCells.removeIf { it.row == row }
+        val toBeRemoved = mutableSetOf<Cell>()
+        val toBeAdded = mutableSetOf<Cell>()
         placedCells.forEach {
             if (it.row < row) {
-                placedCells -= it
-                placedCells += it.move(1, 0)
+                toBeRemoved += it
+                toBeAdded += it.move(1, 0)
             }
         }
+
+        placedCells -= toBeRemoved
+        placedCells += toBeAdded
     }
 }
