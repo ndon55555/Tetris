@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class CellTest {
+class TransformableCellTest {
     private val c1 = CellImpl(RED, 0, 0)
     private val c2 = CellImpl(PURPLE, 1, 1)
     private val c3 = CellImpl(GREEN, 3, 4)
@@ -49,6 +49,6 @@ class CellTest {
     @Test
     fun differentColorSharesPositionTest() {
         val p = Posn(12, 3)
-        assertTrue(CellImpl(RED, p) == CellImpl(PURPLE, p))
+        assertTrue(CellImpl(RED, p).sharesPositionWith(CellImpl(PURPLE, p)))
     }
 }

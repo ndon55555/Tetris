@@ -1,13 +1,17 @@
 package model
 
 enum class CellColor {
-    GREEN, RED, DARK_BLUE, ORANGE, LIGHT_BLUE, YELLOW, PURPLE
+    GREEN, RED, DARK_BLUE, ORANGE, LIGHT_BLUE, YELLOW, PURPLE, NULL
 }
 
 /**
  * Represents a 1x1 block on a Tetris board. (x, y) represents (row, col) of the Cell.
  * */
 interface Cell {
+    val row: Int
+    val col: Int
+    val color: CellColor
+
     /**
      * @param dRow Change in the number of rows from the top.
      * @param dCol Change in the number of columns from the left.
@@ -32,14 +36,4 @@ interface Cell {
      * @return Whether or not the given Cell occupies the same position as this one.
      */
     fun sharesPositionWith(other: Cell): Boolean
-
-    /**
-     * @return The position of this Cell.
-     */
-    fun getPosition(): Posn
-
-    /**
-     * @return The color of this Cell
-     */
-    fun getColor(): CellColor
 }

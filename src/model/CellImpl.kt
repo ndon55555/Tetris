@@ -6,17 +6,11 @@ package model
  * @property color The color of the Cell.
  * @property position Where the Cell is (measured from the top left of the board).
  */
-// TODO break this out into an interface
-data class CellImpl(private val position: Posn) : Cell {
-    private lateinit var color: CellColor
-
-    /**
-     * @param color The color of the Cell.
-     * @param position Where the Cell is.
-     */
-    constructor(color: CellColor, position: Posn) : this(position) {
-        this.color = color
-    }
+data class CellImpl(override val color: CellColor, private val position: Posn) : Cell {
+    override val row: Int
+        get() = position.x.toInt()
+    override val col: Int
+        get() = position.y.toInt()
 
     /**
      * @param color The color of the Cell.
@@ -31,9 +25,5 @@ data class CellImpl(private val position: Posn) : Cell {
 
     override fun rotate90CCWAround(centerOfRotation: Posn): Cell = CellImpl(color, position.rotate90CCWAround(centerOfRotation))
 
-    override fun sharesPositionWith(other: Cell): Boolean = (this.getPosition() == other.getPosition())
-
-    override fun getPosition(): Posn = this.position
-
-    override fun getColor(): CellColor = this.color
+    override fun sharesPositionWith(other: Cell): Boolean = (this.row == other.row && this.col == other.col)
 }

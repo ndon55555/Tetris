@@ -1,6 +1,5 @@
 import model.Board
 import model.BoardImpl
-import model.Cell
 import model.CellColor
 import model.CellImpl
 import org.junit.jupiter.api.BeforeEach

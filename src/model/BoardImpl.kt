@@ -1,7 +1,7 @@
 package model
 
 const val BOARD_WIDTH = 10
-const val BOARD_HEIGHT = 18
+const val BOARD_HEIGHT = 20
 
 /**
  * Represents the Tetris game board. Top-left position of the board considered (0, 0).
@@ -15,23 +15,22 @@ class BoardImpl : Board {
     override fun getPlacedCells(): Set<Cell> = setOf(*placedCells.toTypedArray())
 
     override fun areValidCells(vararg cells: Cell): Boolean = cells.all {
-        it.getPosition().x.toInt() in 0..BOARD_WIDTH
-                && it.getPosition().y.toInt() in 0..BOARD_HEIGHT
-                && placedCells.none { cell -> cell.sharesPositionWith(it) }
+        it.row in 0 until BOARD_HEIGHT && it.col in 0 until BOARD_WIDTH
+                && placedCells.all { cell -> it !== cell && !cell.sharesPositionWith(it) }
     }
 
     override fun placeCells(vararg cells: Cell) {
         if (!areValidCells(*cells)) {
-            throw IllegalArgumentException("invalid tetrimino for this board")
+            throw IllegalArgumentException("invalid cells for this board")
         }
 
         placedCells += cells
     }
 
     override fun clearLine(row: Int) {
-        placedCells.removeIf { it.getPosition().x.toInt() == row }
+        placedCells.removeIf { it.row == row }
         placedCells.forEach {
-            if (it.getPosition().x < row) {
+            if (it.row < row) {
                 placedCells -= it
                 placedCells += it.move(1, 0)
             }

@@ -2,11 +2,6 @@ package model
 
 interface Tetrimino {
     /**
-     * @return This Tetrimino translated one row towards the top of the board.
-     */
-    fun moveUp(): Tetrimino
-
-    /**
      * @return This Tetrimino translated one row away from the top of the board.
      */
     fun moveDown(): Tetrimino
@@ -38,7 +33,7 @@ interface Tetrimino {
 }
 
 /**
- * Represents the different game pieces of a Tetris Game.
+ * Represents the different game pieces of a Tetris TetrisController.
  */
 enum class TetriminoType {
     S, Z, J, L, O, I, T
@@ -74,7 +69,7 @@ fun initTetrimino(type: TetriminoType): Tetrimino = when (type) {
                 setOf(CellImpl(CellColor.ORANGE, 0, BOARD_WIDTH / 2),
                         CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2),
                         CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2 - 1),
-                        CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2)))
+                        CellImpl(CellColor.ORANGE, 1, BOARD_WIDTH / 2 - 2)))
     TetriminoType.O ->
         TetriminoImpl(Posn(0.5, (BOARD_WIDTH - 1) / 2.0),
                 setOf(CellImpl(CellColor.YELLOW, 0, BOARD_WIDTH / 2 - 1),

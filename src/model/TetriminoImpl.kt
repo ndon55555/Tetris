@@ -22,8 +22,8 @@ data class TetriminoImpl(val centerOfRotation: Posn, val blocks: Set<Cell>) : Te
     private fun Set<Cell>.allAdjacent(): Boolean {
         return this.all { c ->
             this.any {
-                val dx = abs(it.getPosition().x - c.getPosition().x).toInt()
-                val dy = abs(it.getPosition().y - c.getPosition().y).toInt()
+                val dx = abs(it.col - c.col)
+                val dy = abs(it.row - c.row)
                 val manhattanDist = dx + dy
                 manhattanDist == 1
             }
@@ -41,8 +41,6 @@ data class TetriminoImpl(val centerOfRotation: Posn, val blocks: Set<Cell>) : Te
             centerOfRotation.translate(dRow.toDouble(), dCol.toDouble()),
             blocks.map { it.move(dRow, dCol) }.toSet()
     )
-
-    override fun moveUp(): TetriminoImpl = move(-1, 0)
 
     override fun moveDown(): TetriminoImpl = move(1, 0)
 
