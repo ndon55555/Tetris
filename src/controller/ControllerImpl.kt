@@ -21,6 +21,7 @@ class ControllerImpl : Controller(), TetrisController {
     private val viewLock = Any()
     private var isRunning = false
     private lateinit var activePiece: Tetrimino
+    private val generator = RandomBagOf7()
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
@@ -47,7 +48,7 @@ class ControllerImpl : Controller(), TetrisController {
         this.board = board
         this.view = view
         this.timer = Timer()
-        this.activePiece = generateTetrimino()
+        this.activePiece = generator.generate()
         timer.scheduleAtFixedRate(0, 750) {
             val next = activePiece.onTheBoard { moveDown() }
             if (activePiece == next) {
@@ -110,7 +111,7 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun newActivePiece(): Tetrimino {
-        val newPiece = generateTetrimino()
+        val newPiece = generator.generate()
         // check for topping out
         if (!newPiece.isValid()) stop()
 
@@ -118,14 +119,27 @@ class ControllerImpl : Controller(), TetrisController {
     }
 }
 
-private fun generateTetrimino(): Tetrimino {
-    return when (Random().nextInt(6)) {
-        0 -> initTetrimino(TetriminoType.L)
-        1 -> initTetrimino(TetriminoType.T)
-        2 -> initTetrimino(TetriminoType.S)
-        3 -> initTetrimino(TetriminoType.I)
-        4 -> initTetrimino(TetriminoType.J)
-        5 -> initTetrimino(TetriminoType.O)
-        else -> initTetrimino(TetriminoType.Z)
+interface TetriminoGenerator {
+    fun generate(): Tetrimino
+}
+
+class RandomBagOf7: TetriminoGenerator {
+    val allPieces = setOf(
+            initTetrimino(TetriminoType.Z),
+            initTetrimino(TetriminoType.S),
+            initTetrimino(TetriminoType.L),
+            initTetrimino(TetriminoType.J),
+            initTetrimino(TetriminoType.T),
+            initTetrimino(TetriminoType.I),
+            initTetrimino(TetriminoType.O)
+    )
+    var currentBag = allPieces.shuffled().toMutableList()
+
+    override fun generate(): Tetrimino {
+        if (currentBag.isEmpty()) {
+            currentBag = allPieces.shuffled().toMutableList()
+        }
+
+        return currentBag.removeAt(0)
     }
 }
