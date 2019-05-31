@@ -4,8 +4,10 @@ import controller.ControllerImpl
 import javafx.application.Platform
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.GridPane
+import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.shape.Rectangle
+import javafx.scene.shape.StrokeType
 import javafx.stage.Stage
 import model.BOARD_HEIGHT
 import model.BOARD_WIDTH
@@ -96,10 +98,16 @@ class BoardView : View("Tetris"), TetrisUI {
 const val CELL_SIZE = 30.0
 
 internal fun backgroundCell(): Rectangle =
-        Rectangle(CELL_SIZE, CELL_SIZE, Paint.valueOf("black")).also { it.stroke = Paint.valueOf("grey") }
+        Rectangle(CELL_SIZE, CELL_SIZE, Color.BLACK)
 
 internal fun foregroundCell(c: Cell): Rectangle =
-        Rectangle(CELL_SIZE, CELL_SIZE, getPaint(c.color)).also { it.stroke = Paint.valueOf("grey") }
+        Rectangle(CELL_SIZE, CELL_SIZE, getPaint(c.color)).also {
+            it.stroke = Color.BLACK
+            it.strokeWidth = 1.5
+            it.strokeType = StrokeType.INSIDE
+            it.arcWidth = 10.0
+            it.arcHeight = 10.0
+        }
 
 internal fun getPaint(c: CellColor): Paint = when (c) {
     CellColor.GREEN -> Paint.valueOf("green")

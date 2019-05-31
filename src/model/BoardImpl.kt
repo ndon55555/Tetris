@@ -1,7 +1,7 @@
 package model
 
 const val BOARD_WIDTH = 10
-const val BOARD_HEIGHT = 20
+const val BOARD_HEIGHT = 22
 
 /**
  * Represents the Tetris game board. Top-left position of the board considered (0, 0).
