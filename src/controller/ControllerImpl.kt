@@ -28,12 +28,12 @@ class ControllerImpl : Controller(), TetrisController {
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
             when (event.code) {
-                KeyCode.Z -> activePiece.onTheBoard { rotate90CCW() }
-                KeyCode.UP -> activePiece.onTheBoard { rotate90CW() }
-                KeyCode.SPACE -> activePiece.onTheBoard { hardDrop() }
-                KeyCode.DOWN -> activePiece.onTheBoard { moveDown() }
-                KeyCode.LEFT -> activePiece.onTheBoard { moveLeft() }
-                KeyCode.RIGHT -> activePiece.onTheBoard { moveRight() }
+                KeyCode.Z -> forActivePiece { rotate90CCW() }
+                KeyCode.UP -> forActivePiece { rotate90CW() }
+                KeyCode.SPACE -> forActivePiece { hardDrop() }
+                KeyCode.DOWN -> forActivePiece { moveDown() }
+                KeyCode.LEFT -> forActivePiece { moveLeft() }
+                KeyCode.RIGHT -> forActivePiece { moveRight() }
                 KeyCode.SHIFT -> println("hold")
                 else -> return
             }
@@ -47,11 +47,12 @@ class ControllerImpl : Controller(), TetrisController {
         this.timer = Timer()
         this.generator.reset()
         this.activePiece = generator.generate()
+
         timer.scheduleAtFixedRate(0, 500) {
             val prev = activePiece
-            activePiece.onTheBoard { moveDown() }
+            forActivePiece { moveDown() }
 
-            if (activePiece == prev) activePiece.onTheBoard { hardDrop() }
+            if (activePiece == prev) forActivePiece { hardDrop() }
         }
     }
 
@@ -65,10 +66,9 @@ class ControllerImpl : Controller(), TetrisController {
         if (showGhost) it.addAll(activePiece.ghostCells())
     }
 
-    private fun Tetrimino.onTheBoard(op: Tetrimino.() -> Tetrimino) {
-        var next = this.op()
-        if (!next.isValid()) next = this
-        activePiece = next
+    private fun forActivePiece(op: Tetrimino.() -> Tetrimino) {
+        val next = activePiece.op()
+        if (next.isValid()) activePiece = next
 
         synchronized(viewLock) {
             view.drawCells(allCells())
