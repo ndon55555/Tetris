@@ -50,6 +50,7 @@ class ControllerImpl : Controller(), TetrisController {
         this.board = board
         this.view = view
         this.timer = Timer()
+        this.generator.reset()
         this.activePiece = generator.generate()
         timer.scheduleAtFixedRate(0, 500) {
             val next = activePiece.onTheBoard { moveDown() }
@@ -133,6 +134,8 @@ class ControllerImpl : Controller(), TetrisController {
 
 interface TetriminoGenerator {
     fun generate(): Tetrimino
+
+    fun reset()
 }
 
 class RandomBagOf7 : TetriminoGenerator {
@@ -145,13 +148,16 @@ class RandomBagOf7 : TetriminoGenerator {
             initTetrimino(TetriminoType.I),
             initTetrimino(TetriminoType.O)
     )
-    private var currentBag = allPieces.shuffled().toMutableList()
+    private var currentBag = newBag()
 
     override fun generate(): Tetrimino {
-        if (currentBag.isEmpty()) {
-            currentBag = allPieces.shuffled().toMutableList()
-        }
-
+        if (currentBag.isEmpty()) reset()
         return currentBag.removeAt(0)
     }
+
+    override fun reset() {
+        currentBag = newBag()
+    }
+
+    private fun newBag(): MutableList<Tetrimino> = allPieces.shuffled().toMutableList()
 }
