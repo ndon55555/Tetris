@@ -19,8 +19,6 @@ class ControllerImpl : Controller(), TetrisController {
     private lateinit var board: Board
     private lateinit var view: TetrisUI
     private lateinit var activePiece: Tetrimino
-    private val boardLock = Any()
-    private val viewLock = Any()
     private var isRunning = false
     private val generator: TetriminoGenerator = RandomBagOf7()
     private val showGhost = true
@@ -67,15 +65,17 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun forActivePiece(op: Tetrimino.() -> Tetrimino) {
-        val next = activePiece.op()
-        if (next.isValid()) activePiece = next
+        synchronized(activePiece) {
+            val next = activePiece.op()
+            if (next.isValid()) activePiece = next
+        }
 
-        synchronized(viewLock) {
+        synchronized(view) {
             view.drawCells(allCells())
         }
     }
 
-    private fun Tetrimino.isValid(): Boolean = synchronized(boardLock) {
+    private fun Tetrimino.isValid(): Boolean = synchronized(board) {
         board.areValidCells(*this.cells().toTypedArray())
     }
 
@@ -90,7 +90,7 @@ class ControllerImpl : Controller(), TetrisController {
     private fun Tetrimino.clearCompletedLines() {
         val candidateLines = this.cells().map { it.row }.distinct().sorted()
         for (line in candidateLines) {
-            synchronized(boardLock) {
+            synchronized(board) {
                 if (board.getPlacedCells().filter { it.row == line }.size == 10) {
                     board.clearLine(line)
                 }
@@ -101,7 +101,7 @@ class ControllerImpl : Controller(), TetrisController {
     private fun Tetrimino.placeOnBoard() {
         val cells = this.cells().toTypedArray()
 
-        synchronized(boardLock) {
+        synchronized(board) {
             board.placeCells(*cells)
         }
     }
