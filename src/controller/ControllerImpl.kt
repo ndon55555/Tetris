@@ -18,31 +18,26 @@ class ControllerImpl : Controller(), TetrisController {
     private lateinit var timer: Timer
     private lateinit var board: Board
     private lateinit var view: TetrisUI
+    private lateinit var activePiece: Tetrimino
     private val boardLock = Any()
     private val viewLock = Any()
     private var isRunning = false
-    private lateinit var activePiece: Tetrimino
     private val generator: TetriminoGenerator = RandomBagOf7()
     private val showGhost = true
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
             when (event.code) {
-                KeyCode.Z -> activePiece = activePiece.onTheBoard { rotate90CCW() }
-                KeyCode.UP -> activePiece = activePiece.onTheBoard { rotate90CW() }
-                KeyCode.SPACE -> activePiece = activePiece.hardDrop()
-                KeyCode.DOWN -> activePiece = activePiece.onTheBoard { moveDown() }
-                KeyCode.LEFT -> activePiece = activePiece.onTheBoard { moveLeft() }
-                KeyCode.RIGHT -> activePiece = activePiece.onTheBoard { moveRight() }
+                KeyCode.Z -> activePiece.onTheBoard { rotate90CCW() }
+                KeyCode.UP -> activePiece.onTheBoard { rotate90CW() }
+                KeyCode.SPACE -> activePiece.onTheBoard { hardDrop() }
+                KeyCode.DOWN -> activePiece.onTheBoard { moveDown() }
+                KeyCode.LEFT -> activePiece.onTheBoard { moveLeft() }
+                KeyCode.RIGHT -> activePiece.onTheBoard { moveRight() }
                 KeyCode.SHIFT -> println("hold")
                 else -> return
             }
-
-            synchronized(viewLock) {
-                view.drawCells(allCells())
-            }
         }
-
     }
 
     override fun run(board: Board, view: TetrisUI) {
@@ -53,18 +48,10 @@ class ControllerImpl : Controller(), TetrisController {
         this.generator.reset()
         this.activePiece = generator.generate()
         timer.scheduleAtFixedRate(0, 500) {
-            val next = activePiece.onTheBoard { moveDown() }
-            activePiece = if (activePiece == next) {
-                activePiece.placeOnBoard()
-                activePiece.clearCompletedLines()
-                newActivePiece()
-            } else {
-                next
-            }
+            val prev = activePiece
+            activePiece.onTheBoard { moveDown() }
 
-            synchronized(viewLock) {
-                view.drawCells(allCells())
-            }
+            if (activePiece == prev) activePiece.onTheBoard { hardDrop() }
         }
     }
 
@@ -78,11 +65,14 @@ class ControllerImpl : Controller(), TetrisController {
         if (showGhost) it.addAll(activePiece.ghostCells())
     }
 
-    private fun Tetrimino.onTheBoard(op: Tetrimino.() -> Tetrimino): Tetrimino {
-        val next = this.op()
-        if (next.isValid()) return next
+    private fun Tetrimino.onTheBoard(op: Tetrimino.() -> Tetrimino) {
+        var next = this.op()
+        if (!next.isValid()) next = this
+        activePiece = next
 
-        return this
+        synchronized(viewLock) {
+            view.drawCells(allCells())
+        }
     }
 
     private fun Tetrimino.isValid(): Boolean = synchronized(boardLock) {
@@ -127,7 +117,7 @@ class ControllerImpl : Controller(), TetrisController {
         var t = this
         while (t.moveDown().isValid()) t = t.moveDown()
         val ghostCells = t.cells().map { CellImpl(CellColor.NULL, it.row, it.col) }.toMutableSet()
-        ghostCells.removeAll { activePiece.cells().any { c -> it.sharesPositionWith(c)} }
+        ghostCells.removeAll { this.cells().any { c -> it.sharesPositionWith(c) } }
         return ghostCells
     }
 }
