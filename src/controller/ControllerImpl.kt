@@ -27,6 +27,9 @@ class ControllerImpl : Controller(), TetrisController {
     private val showGhost = true
     private val pressedRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
+    private var initialMoveLeft = true
+    private var initialMoveRight = true
+    private var initialMoveDown = true
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
@@ -58,6 +61,9 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun handleKeyRelease(code: KeyCode) {
+        initialMoveDown = true
+        initialMoveLeft = true
+        initialMoveRight = true
         pressedRepeatableKeys -= code
         pressedNonRepeatableKeys -= code
     }
@@ -80,13 +86,35 @@ class ControllerImpl : Controller(), TetrisController {
             if (activePiece == prev) forActivePiece { hardDrop() }
         }
 
-        val framesPerSec = 20
-        frameTimer.scheduleAtFixedRate(0, 1000L / framesPerSec) {
-            for (key in pressedRepeatableKeys) {
+        val autoRepeatRate = 20L
+        val delayAutoShift = 133L
+        frameTimer.scheduleAtFixedRate(0, 1000 / autoRepeatRate) {
+            pressedRepeatableKeys.parallelStream().forEach { key ->
                 when (key) {
-                    KeyCode.DOWN -> forActivePiece { moveDown() }
-                    KeyCode.LEFT -> forActivePiece { moveLeft() }
-                    KeyCode.RIGHT -> forActivePiece { moveRight() }
+                    KeyCode.DOWN -> {
+                        if (initialMoveDown) {
+                            initialMoveDown = false
+                            Thread.sleep(delayAutoShift)
+                        }
+
+                        forActivePiece { moveDown() }
+                    }
+                    KeyCode.LEFT -> {
+                        if (initialMoveLeft) {
+                            initialMoveLeft = false
+                            Thread.sleep(delayAutoShift)
+                        }
+
+                        forActivePiece { moveLeft() }
+                    }
+                    KeyCode.RIGHT -> {
+                        if (initialMoveRight) {
+                            initialMoveRight = false
+                            Thread.sleep(delayAutoShift)
+                        }
+
+                        forActivePiece { moveRight() }
+                    }
                     else -> {
                     }
                 }
