@@ -2,6 +2,7 @@ package controller
 
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import model.BOARD_WIDTH
 import model.Board
 import model.Cell
 import model.CellColor
@@ -11,51 +12,91 @@ import model.TetriminoType
 import model.initTetrimino
 import tornadofx.Controller
 import view.TetrisUI
+import java.util.Collections
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 
 class ControllerImpl : Controller(), TetrisController {
-    private lateinit var timer: Timer
+    private lateinit var clockTimer: Timer
+    private lateinit var frameTimer: Timer
     private lateinit var board: Board
     private lateinit var view: TetrisUI
     private lateinit var activePiece: Tetrimino
     private var isRunning = false
     private val generator: TetriminoGenerator = RandomBagOf7()
     private val showGhost = true
+    private val pressedRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
+    private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
-            when (event.code) {
-                KeyCode.Z -> forActivePiece { rotate90CCW() }
-                KeyCode.UP -> forActivePiece { rotate90CW() }
-                KeyCode.SPACE -> forActivePiece { hardDrop() }
-                KeyCode.DOWN -> forActivePiece { moveDown() }
-                KeyCode.LEFT -> forActivePiece { moveLeft() }
-                KeyCode.RIGHT -> forActivePiece { moveRight() }
-                KeyCode.SHIFT -> println("hold")
+            when (event.eventType) {
+                KeyEvent.KEY_PRESSED -> handleKeyPress(event.code)
+                KeyEvent.KEY_RELEASED -> handleKeyRelease(event.code)
                 else -> return
             }
         }
+    }
+
+    private fun handleKeyPress(code: KeyCode) {
+        val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
+        if (code in repeatableKeys) {
+            pressedRepeatableKeys += code
+        } else {
+            if (code !in pressedNonRepeatableKeys) {
+                when (code) {
+                    KeyCode.Z -> forActivePiece { rotate90CCW() }
+                    KeyCode.UP -> forActivePiece { rotate90CW() }
+                    KeyCode.SPACE -> forActivePiece { hardDrop() }
+                    KeyCode.SHIFT -> println("hold")
+                    else -> return
+                }
+
+                pressedNonRepeatableKeys += code
+            }
+        }
+    }
+
+    private fun handleKeyRelease(code: KeyCode) {
+        pressedRepeatableKeys -= code
+        pressedNonRepeatableKeys -= code
     }
 
     override fun run(board: Board, view: TetrisUI) {
         this.isRunning = true
         this.board = board
         this.view = view
-        this.timer = Timer()
+        this.clockTimer = Timer()
+        this.frameTimer = Timer()
         this.generator.reset()
+        this.pressedRepeatableKeys.clear()
+        this.pressedNonRepeatableKeys.clear()
         this.activePiece = generator.generate()
 
-        timer.scheduleAtFixedRate(0, 500) {
+        clockTimer.scheduleAtFixedRate(0, 500) {
             val prev = activePiece
             forActivePiece { moveDown() }
 
             if (activePiece == prev) forActivePiece { hardDrop() }
         }
+
+        val framesPerSec = 20
+        frameTimer.scheduleAtFixedRate(0, 1000L / framesPerSec) {
+            for (key in pressedRepeatableKeys) {
+                when (key) {
+                    KeyCode.DOWN -> forActivePiece { moveDown() }
+                    KeyCode.LEFT -> forActivePiece { moveLeft() }
+                    KeyCode.RIGHT -> forActivePiece { moveRight() }
+                    else -> {
+                    }
+                }
+            }
+        }
     }
 
     override fun stop() {
-        timer.cancel()
+        clockTimer.cancel()
+        frameTimer.cancel()
         this.isRunning = false
     }
 
@@ -91,9 +132,8 @@ class ControllerImpl : Controller(), TetrisController {
         val candidateLines = this.cells().map { it.row }.distinct().sorted()
         for (line in candidateLines) {
             synchronized(board) {
-                if (board.getPlacedCells().filter { it.row == line }.size == 10) {
-                    board.clearLine(line)
-                }
+                val cellsInRow = board.getPlacedCells().filter { it.row == line }.size
+                if (cellsInRow == BOARD_WIDTH) board.clearLine(line)
             }
         }
     }

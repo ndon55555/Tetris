@@ -67,7 +67,7 @@ class BoardView : View("Tetris"), TetrisUI {
     override fun onDock() {
         // to understand why this handler is set here instead of on the root,
         // see https://stackoverflow.com/questions/52356548/tornadofx-key-press-listener-issues
-        currentStage?.addEventHandler(KeyEvent.KEY_PRESSED, controller)
+        currentStage?.addEventHandler(KeyEvent.ANY, controller)
         val view = this
         controller.run(BoardImpl(), view)
         super.onDock()
