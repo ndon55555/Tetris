@@ -27,9 +27,17 @@ class ControllerImpl : Controller(), TetrisController {
     private val showGhost = true
     private val pressedRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
-    private var initialMoveLeft = true
-    private var initialMoveRight = true
-    private var initialMoveDown = true
+    private val keysHeld = Collections.synchronizedSet(mutableSetOf<KeyCode>())
+    private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
+    private val keyToAction = mapOf(
+            KeyCode.Z to { forActivePiece { rotate90CCW() } },
+            KeyCode.UP to { forActivePiece { rotate90CW() } },
+            KeyCode.LEFT to { forActivePiece { moveLeft() } },
+            KeyCode.RIGHT to { forActivePiece { moveRight() } },
+            KeyCode.DOWN to { forActivePiece { moveDown() } },
+            KeyCode.SPACE to { forActivePiece { hardDrop() } },
+            KeyCode.SHIFT to { println("hold") }
+    )
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
@@ -42,32 +50,18 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun handleKeyPress(code: KeyCode) {
-        val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
         if (code in repeatableKeys) {
             pressedRepeatableKeys += code
         } else {
             if (code !in pressedNonRepeatableKeys) {
-                when (code) {
-                    KeyCode.Z -> forActivePiece { rotate90CCW() }
-                    KeyCode.UP -> forActivePiece { rotate90CW() }
-                    KeyCode.SPACE -> forActivePiece { hardDrop() }
-                    KeyCode.SHIFT -> println("hold")
-                    else -> return
-                }
-
+                keyToAction[code]?.invoke()
                 pressedNonRepeatableKeys += code
             }
         }
     }
 
     private fun handleKeyRelease(code: KeyCode) {
-        when (code) {
-            KeyCode.DOWN -> initialMoveDown = true
-            KeyCode.LEFT -> initialMoveLeft = true
-            KeyCode.RIGHT -> initialMoveRight = true
-            else -> {
-            }
-        }
+        keysHeld -= code
         pressedRepeatableKeys -= code
         pressedNonRepeatableKeys -= code
     }
@@ -97,33 +91,12 @@ class ControllerImpl : Controller(), TetrisController {
                     .toSet() // create a copy to avoid concurrent modifications to pressedRepeatableKeys
                     .parallelStream()
                     .forEach { key ->
-                        // FIXME needs synchronization
-                        when (key) {
-                            KeyCode.DOWN -> {
-                                forActivePiece { moveDown() }
+                        if (key in repeatableKeys) {
+                            keyToAction[key]?.invoke()
 
-                                if (initialMoveDown) {
-                                    initialMoveDown = false
-                                    Thread.sleep(delayAutoShift)
-                                }
-                            }
-                            KeyCode.LEFT -> {
-                                forActivePiece { moveLeft() }
-
-                                if (initialMoveLeft) {
-                                    initialMoveLeft = false
-                                    Thread.sleep(delayAutoShift)
-                                }
-                            }
-                            KeyCode.RIGHT -> {
-                                forActivePiece { moveRight() }
-
-                                if (initialMoveRight) {
-                                    initialMoveRight = false
-                                    Thread.sleep(delayAutoShift)
-                                }
-                            }
-                            else -> {
+                            if (key !in keysHeld) {
+                                keysHeld += key
+                                Thread.sleep(delayAutoShift)
                             }
                         }
                     }
