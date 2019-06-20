@@ -12,7 +12,7 @@ const val BOARD_HEIGHT = 22
 class BoardImpl : Board {
     private val placedCells = mutableSetOf<Cell>()
 
-    override fun getPlacedCells(): Set<Cell> = setOf(*placedCells.toTypedArray())
+    override fun getPlacedCells(): Set<Cell> = placedCells.toSet()
 
     override fun areValidCells(vararg cells: Cell): Boolean = cells.all {
         it.row in 0 until BOARD_HEIGHT && it.col in 0 until BOARD_WIDTH

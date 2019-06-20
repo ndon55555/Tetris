@@ -14,7 +14,7 @@ import tornadofx.Controller
 import view.TetrisUI
 import java.util.Collections
 import java.util.Timer
-import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.concurrent.schedule
 
 class ControllerImpl : Controller(), TetrisController {
     private lateinit var clockTimer: Timer
@@ -61,9 +61,13 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun handleKeyRelease(code: KeyCode) {
-        initialMoveDown = true
-        initialMoveLeft = true
-        initialMoveRight = true
+        when (code) {
+            KeyCode.DOWN -> initialMoveDown = true
+            KeyCode.LEFT -> initialMoveLeft = true
+            KeyCode.RIGHT -> initialMoveRight = true
+            else -> {
+            }
+        }
         pressedRepeatableKeys -= code
         pressedNonRepeatableKeys -= code
     }
@@ -79,46 +83,50 @@ class ControllerImpl : Controller(), TetrisController {
         this.pressedNonRepeatableKeys.clear()
         this.activePiece = generator.generate()
 
-        clockTimer.scheduleAtFixedRate(0, 500) {
+        clockTimer.schedule(0, 500) {
             val prev = activePiece
             forActivePiece { moveDown() }
 
             if (activePiece == prev) forActivePiece { hardDrop() }
         }
 
-        val autoRepeatRate = 20L
+        val autoRepeatRate = 30L
         val delayAutoShift = 133L
-        frameTimer.scheduleAtFixedRate(0, 1000 / autoRepeatRate) {
-            pressedRepeatableKeys.parallelStream().forEach { key ->
-                when (key) {
-                    KeyCode.DOWN -> {
-                        if (initialMoveDown) {
-                            initialMoveDown = false
-                            Thread.sleep(delayAutoShift)
-                        }
+        frameTimer.schedule(0, 1000 / autoRepeatRate) {
+            pressedRepeatableKeys
+                    .toSet() // create a copy to avoid concurrent modifications to pressedRepeatableKeys
+                    .parallelStream()
+                    .forEach { key ->
+                        // FIXME needs synchronization
+                        when (key) {
+                            KeyCode.DOWN -> {
+                                forActivePiece { moveDown() }
 
-                        forActivePiece { moveDown() }
-                    }
-                    KeyCode.LEFT -> {
-                        if (initialMoveLeft) {
-                            initialMoveLeft = false
-                            Thread.sleep(delayAutoShift)
-                        }
+                                if (initialMoveDown) {
+                                    initialMoveDown = false
+                                    Thread.sleep(delayAutoShift)
+                                }
+                            }
+                            KeyCode.LEFT -> {
+                                forActivePiece { moveLeft() }
 
-                        forActivePiece { moveLeft() }
-                    }
-                    KeyCode.RIGHT -> {
-                        if (initialMoveRight) {
-                            initialMoveRight = false
-                            Thread.sleep(delayAutoShift)
-                        }
+                                if (initialMoveLeft) {
+                                    initialMoveLeft = false
+                                    Thread.sleep(delayAutoShift)
+                                }
+                            }
+                            KeyCode.RIGHT -> {
+                                forActivePiece { moveRight() }
 
-                        forActivePiece { moveRight() }
+                                if (initialMoveRight) {
+                                    initialMoveRight = false
+                                    Thread.sleep(delayAutoShift)
+                                }
+                            }
+                            else -> {
+                            }
+                        }
                     }
-                    else -> {
-                    }
-                }
-            }
         }
     }
 
