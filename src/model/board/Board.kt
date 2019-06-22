@@ -1,4 +1,6 @@
-package model
+package model.board
+
+import model.cell.Cell
 
 interface Board {
     /**

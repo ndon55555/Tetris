@@ -1,4 +1,4 @@
-package model
+package model.cell
 
 /**
  * Represents a position on a Cartesian plane.

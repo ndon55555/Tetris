@@ -1,4 +1,4 @@
-package model
+package model.cell
 
 enum class CellColor {
     GREEN, RED, DARK_BLUE, ORANGE, LIGHT_BLUE, YELLOW, PURPLE, NULL

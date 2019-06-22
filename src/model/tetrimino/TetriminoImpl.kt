@@ -1,5 +1,8 @@
-package model
+package model.tetrimino
 
+import model.cell.Posn
+import model.cell.Cell
+import java.util.Objects
 import kotlin.math.abs
 
 /**
@@ -8,7 +11,7 @@ import kotlin.math.abs
  * @property centerOfRotation The Posn with which the TetriminoImpl will rotate.
  * @property blocks The blocks that compose a TetriminoImpl.
  */
-data class TetriminoImpl(val centerOfRotation: Posn, val blocks: Set<Cell>) : Tetrimino {
+open class TetriminoImpl(private val centerOfRotation: Posn, private val blocks: Set<Cell>) : Tetrimino {
     init {
         if (blocks.size != 4) {
             throw IllegalArgumentException("Tetrimino should have exactly 4 cells")
@@ -55,5 +58,12 @@ data class TetriminoImpl(val centerOfRotation: Posn, val blocks: Set<Cell>) : Te
     override fun rotate90CCW(): TetriminoImpl = TetriminoImpl(centerOfRotation, blocks.map {
         it.rotate90CCWAround(centerOfRotation)
     }.toSet())
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Tetrimino) return false
+        return this.cells().size == other.cells().size && this.cells().containsAll(other.cells())
+    }
+
+    override fun hashCode(): Int = Objects.hash(this.cells())
 }
 

@@ -1,4 +1,4 @@
-package model
+package model.cell
 
 /**
  * Represents a 1x1 block on a Tetris board. (x, y) represents (row, col) of the Cell.

@@ -1,9 +1,9 @@
-import model.CellColor.GREEN
-import model.CellColor.PURPLE
-import model.CellColor.RED
-import model.CellColor.YELLOW
-import model.CellImpl
-import model.Posn
+import model.cell.CellColor.GREEN
+import model.cell.CellColor.PURPLE
+import model.cell.CellColor.RED
+import model.cell.CellColor.YELLOW
+import model.cell.CellImpl
+import model.cell.Posn
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

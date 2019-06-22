@@ -9,11 +9,11 @@ import javafx.scene.paint.Paint
 import javafx.scene.shape.Rectangle
 import javafx.scene.shape.StrokeType
 import javafx.stage.Stage
-import model.BOARD_HEIGHT
-import model.BOARD_WIDTH
-import model.BoardImpl
-import model.Cell
-import model.CellColor
+import model.board.BOARD_HEIGHT
+import model.board.BOARD_WIDTH
+import model.board.BoardImpl
+import model.cell.Cell
+import model.cell.CellColor
 import tornadofx.App
 import tornadofx.View
 import tornadofx.action
@@ -21,7 +21,6 @@ import tornadofx.button
 import tornadofx.clear
 import tornadofx.gridpane
 import tornadofx.hbox
-import tornadofx.replaceChildren
 import tornadofx.row
 
 class TetrisApp : App(BoardView::class) {

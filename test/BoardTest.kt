@@ -1,7 +1,7 @@
-import model.Board
-import model.BoardImpl
-import model.CellColor
-import model.CellImpl
+import model.board.Board
+import model.board.BoardImpl
+import model.cell.CellColor
+import model.cell.CellImpl
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

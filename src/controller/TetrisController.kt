@@ -2,7 +2,7 @@ package controller
 
 import javafx.event.EventHandler
 import javafx.scene.input.KeyEvent
-import model.Board
+import model.board.Board
 import view.TetrisUI
 
 /**

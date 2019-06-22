@@ -2,14 +2,19 @@ package controller
 
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import model.BOARD_WIDTH
-import model.Board
-import model.Cell
-import model.CellColor
-import model.CellImpl
-import model.Tetrimino
-import model.TetriminoType
-import model.initTetrimino
+import model.board.BOARD_WIDTH
+import model.board.Board
+import model.cell.Cell
+import model.cell.CellColor
+import model.cell.CellImpl
+import model.tetrimino.I
+import model.tetrimino.J
+import model.tetrimino.L
+import model.tetrimino.O
+import model.tetrimino.S
+import model.tetrimino.T
+import model.tetrimino.Tetrimino
+import model.tetrimino.Z
 import tornadofx.Controller
 import view.TetrisUI
 import java.util.Collections
@@ -178,15 +183,7 @@ interface TetriminoGenerator {
 }
 
 class RandomBagOf7 : TetriminoGenerator {
-    private val allPieces = setOf(
-            initTetrimino(TetriminoType.Z),
-            initTetrimino(TetriminoType.S),
-            initTetrimino(TetriminoType.L),
-            initTetrimino(TetriminoType.J),
-            initTetrimino(TetriminoType.T),
-            initTetrimino(TetriminoType.I),
-            initTetrimino(TetriminoType.O)
-    )
+    private val allPieces = setOf(Z(), S(), L(), J(), T(), I(), O())
     private var currentBag = newBag()
 
     override fun generate(): Tetrimino {

@@ -1,4 +1,6 @@
-package model
+package model.board
+
+import model.cell.Cell
 
 const val BOARD_WIDTH = 10
 const val BOARD_HEIGHT = 22

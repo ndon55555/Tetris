@@ -1,9 +1,12 @@
-import model.CellColor
-import model.CellImpl
-import model.Posn
-import model.TetriminoImpl
-import model.TetriminoType
-import model.initTetrimino
+import model.cell.CellColor
+import model.cell.CellImpl
+import model.tetrimino.I
+import model.tetrimino.J
+import model.tetrimino.O
+import model.cell.Posn
+import model.tetrimino.S
+import model.tetrimino.T
+import model.tetrimino.TetriminoImpl
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
@@ -11,11 +14,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TetriminoTest {
-    private val tetriS = initTetrimino(TetriminoType.S)
-    private val tetriJ = initTetrimino(TetriminoType.J)
-    private val tetriI = initTetrimino(TetriminoType.I)
-    private val tetriO = initTetrimino(TetriminoType.O)
-    private val tetriT = initTetrimino(TetriminoType.T)
+    private val tetriS = S()
+    private val tetriJ = J()
+    private val tetriI = I()
+    private val tetriO = O()
+    private val tetriT = T()
 
     @Test
     fun identityMovementTest() {
