@@ -23,16 +23,16 @@ import kotlin.concurrent.schedule
 
 class ControllerImpl : Controller(), TetrisController {
     private lateinit var clockTimer: Timer
-    private lateinit var frameTimer: Timer
     private lateinit var board: Board
     private lateinit var view: TetrisUI
     private lateinit var activePiece: Tetrimino
     private var isRunning = false
     private val generator: TetriminoGenerator = RandomBagOf7()
     private val showGhost = true
+    private val autoRepeatRate = 35L // Milliseconds between each auto repeat
+    private val delayAutoShift = 120L // Milliseconds before activating auto repeat
     private val pressedRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
-    private val keysHeld = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
     private val keyToAction = mapOf(
             KeyCode.Z to { forActivePiece { rotate90CCW() } },
@@ -42,7 +42,7 @@ class ControllerImpl : Controller(), TetrisController {
             KeyCode.DOWN to { forActivePiece { moveDown() } },
             KeyCode.SPACE to { forActivePiece { hardDrop() } },
             KeyCode.SHIFT to { println("hold") }
-    )
+    ).withDefault { {} }
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
@@ -56,61 +56,67 @@ class ControllerImpl : Controller(), TetrisController {
 
     private fun handleKeyPress(code: KeyCode) {
         if (code in repeatableKeys) {
-            pressedRepeatableKeys += code
+            if (code !in pressedRepeatableKeys) {
+                pressedRepeatableKeys += code
+                keyToAction.getValue(code).invoke()
+
+                Thread {
+                    if (code != KeyCode.DOWN) Thread.sleep(delayAutoShift)
+
+                    while (pressedRepeatableKeys.contains(code)) {
+                        keyToAction.getValue(code).invoke()
+                        Thread.sleep(autoRepeatRate)
+                    }
+                }.start()
+            }
         } else {
             if (code !in pressedNonRepeatableKeys) {
-                keyToAction[code]?.invoke()
+                keyToAction.getValue(code).invoke()
                 pressedNonRepeatableKeys += code
             }
         }
     }
 
     private fun handleKeyRelease(code: KeyCode) {
-        keysHeld -= code
         pressedRepeatableKeys -= code
         pressedNonRepeatableKeys -= code
     }
 
     override fun run(board: Board, view: TetrisUI) {
+        this.board = object : Board {
+            @Synchronized
+            override fun areValidCells(vararg cells: Cell): Boolean = board.areValidCells(*cells)
+
+            @Synchronized
+            override fun placeCells(vararg cells: Cell) = board.placeCells(*cells)
+
+            @Synchronized
+            override fun clearLine(row: Int) = board.clearLine(row)
+
+            @Synchronized
+            override fun getPlacedCells() = board.getPlacedCells()
+        }
+        this.view = object : TetrisUI {
+            @Synchronized
+            override fun drawCells(cells: Set<Cell>) = view.drawCells(cells)
+        }
         this.isRunning = true
-        this.board = board
-        this.view = view
         this.clockTimer = Timer()
-        this.frameTimer = Timer()
         this.generator.reset()
         this.pressedRepeatableKeys.clear()
         this.pressedNonRepeatableKeys.clear()
         this.activePiece = generator.generate()
 
-        clockTimer.schedule(0, 500) {
+        clockTimer.schedule(0, 1000) {
             val prev = activePiece
-            forActivePiece { moveDown() }
+            keyToAction.getValue(KeyCode.DOWN).invoke()
 
-            if (activePiece == prev) forActivePiece { hardDrop() }
-        }
-
-        val autoRepeatRate = 30L
-        val delayAutoShift = 133L
-        frameTimer.schedule(0, 1000 / autoRepeatRate) {
-            pressedRepeatableKeys
-                    .toSet() // create a copy to avoid concurrent modifications to pressedRepeatableKeys
-                    .parallelStream()
-                    .forEach { key ->
-                        if (key in repeatableKeys) {
-                            keyToAction[key]?.invoke()
-
-                            if (key !in keysHeld) {
-                                keysHeld += key
-                                Thread.sleep(delayAutoShift)
-                            }
-                        }
-                    }
+            if (activePiece == prev) keyToAction.getValue(KeyCode.SPACE).invoke()
         }
     }
 
     override fun stop() {
         clockTimer.cancel()
-        frameTimer.cancel()
         this.isRunning = false
     }
 
@@ -125,14 +131,10 @@ class ControllerImpl : Controller(), TetrisController {
             if (next.isValid()) activePiece = next
         }
 
-        synchronized(view) {
-            view.drawCells(allCells())
-        }
+        view.drawCells(allCells())
     }
 
-    private fun Tetrimino.isValid(): Boolean = synchronized(board) {
-        board.areValidCells(*this.cells().toTypedArray())
-    }
+    private fun Tetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
 
     private fun Tetrimino.hardDrop(): Tetrimino {
         var t = this
@@ -145,19 +147,14 @@ class ControllerImpl : Controller(), TetrisController {
     private fun Tetrimino.clearCompletedLines() {
         val candidateLines = this.cells().map { it.row }.distinct().sorted()
         for (line in candidateLines) {
-            synchronized(board) {
-                val cellsInRow = board.getPlacedCells().filter { it.row == line }.size
-                if (cellsInRow == BOARD_WIDTH) board.clearLine(line)
-            }
+            val cellsInRow = board.getPlacedCells().filter { it.row == line }.size
+            if (cellsInRow == BOARD_WIDTH) board.clearLine(line)
         }
     }
 
     private fun Tetrimino.placeOnBoard() {
         val cells = this.cells().toTypedArray()
-
-        synchronized(board) {
-            board.placeCells(*cells)
-        }
+        board.placeCells(*cells)
     }
 
     private fun newActivePiece(): Tetrimino {
