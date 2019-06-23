@@ -4,6 +4,7 @@ import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.O
 import model.cell.Posn
+import model.tetrimino.Orientation
 import model.tetrimino.S
 import model.tetrimino.T
 import model.tetrimino.TetriminoImpl
@@ -57,7 +58,7 @@ class TetriminoTest {
     @Test
     fun notFourCellsTest() {
         expectException(IllegalArgumentException::class, "should have exactly 4 cells") {
-            TetriminoImpl(Posn(1, 1), setOf())
+            TetriminoImpl(Posn(1, 1), setOf(), Orientation.UP)
         }
     }
 
@@ -71,9 +72,19 @@ class TetriminoTest {
                             CellImpl(CellColor.DARK_BLUE, 1, 2),
                             CellImpl(CellColor.DARK_BLUE, 2, 2),
                             CellImpl(CellColor.DARK_BLUE, 3, 3)
-                    )
+                    ),
+                    Orientation.UP
             )
         }
+    }
+
+    @Test
+    fun orientationTest() {
+        assertEquals(Orientation.UP, tetriT.orientation())
+        assertEquals(Orientation.RIGHT, tetriT.rotate90CW().orientation())
+        assertEquals(Orientation.LEFT, tetriT.rotate90CCW().orientation())
+        assertEquals(Orientation.DOWN, tetriT.rotate90CW().rotate90CW().orientation())
+        assertEquals(Orientation.DOWN, tetriT.rotate90CCW().rotate90CCW().orientation())
     }
 
     private fun <T : Throwable> expectException(exceptionClass: KClass<T>, substring: String, block: () -> Unit) {

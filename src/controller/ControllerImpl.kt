@@ -11,6 +11,7 @@ import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.L
 import model.tetrimino.O
+import model.tetrimino.Orientation
 import model.tetrimino.S
 import model.tetrimino.StandardTetrimino
 import model.tetrimino.T
@@ -20,11 +21,13 @@ import view.TetrisUI
 import java.util.Collections
 import java.util.Timer
 import kotlin.concurrent.schedule
+import kotlin.math.abs
 
 class ControllerImpl : Controller(), TetrisController {
     private lateinit var clockTimer: Timer
     private lateinit var board: Board
     private lateinit var view: TetrisUI
+    private lateinit var rotationSystem: RotationSystem
     private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
     private val generator: StandardTetriminoGenerator = RandomBagOf7()
@@ -35,12 +38,12 @@ class ControllerImpl : Controller(), TetrisController {
     private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
     private val keyToAction = mapOf(
-            KeyCode.Z to { forActivePiece { rotate90CCW() } },
-            KeyCode.UP to { forActivePiece { rotate90CW() } },
-            KeyCode.LEFT to { forActivePiece { moveLeft() } },
-            KeyCode.RIGHT to { forActivePiece { moveRight() } },
-            KeyCode.DOWN to { forActivePiece { moveDown() } },
-            KeyCode.SPACE to { forActivePiece { hardDrop() } },
+            KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
+            KeyCode.UP to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
+            KeyCode.LEFT to { forActivePiece { t -> t.moveLeft() } },
+            KeyCode.RIGHT to { forActivePiece { t -> t.moveRight() } },
+            KeyCode.DOWN to { forActivePiece { t -> t.moveDown() } },
+            KeyCode.SPACE to { forActivePiece { t -> t.hardDrop() } },
             KeyCode.SHIFT to { println("hold") }
     ).withDefault { {} }
 
@@ -100,6 +103,7 @@ class ControllerImpl : Controller(), TetrisController {
             @Synchronized
             override fun drawCells(cells: Set<Cell>) = view.drawCells(cells)
         }
+        this.rotationSystem = SuperRotation()
         this.isRunning = true
         this.clockTimer = Timer()
         this.generator.reset()
@@ -125,9 +129,9 @@ class ControllerImpl : Controller(), TetrisController {
         if (showGhost) it.addAll(activePiece.ghostCells())
     }
 
-    private fun forActivePiece(op: StandardTetrimino.() -> StandardTetrimino) {
+    private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino) {
         synchronized(activePiece) {
-            val next = activePiece.op()
+            val next = op(activePiece)
             if (next.isValid()) activePiece = next
         }
 
@@ -193,4 +197,86 @@ class RandomBagOf7 : StandardTetriminoGenerator {
     }
 
     private fun newBag(): MutableList<StandardTetrimino> = allPieces.shuffled().toMutableList()
+}
+
+interface RotationSystem {
+    fun rotate90CW(t: StandardTetrimino, board: Board): StandardTetrimino
+
+    fun rotate90CCW(t: StandardTetrimino, board: Board): StandardTetrimino
+}
+
+class SuperRotation : RotationSystem {
+    val jlstzoData = mapOf(
+            Orientation.UP to mapOf(
+                    Orientation.LEFT to listOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(1, -2)),
+                    Orientation.RIGHT to listOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
+            ),
+            Orientation.RIGHT to mapOf(
+                    Orientation.UP to listOf(Pair(1, 0), Pair(1, -1), Pair(0, 2), Pair(1, 2)),
+                    Orientation.DOWN to listOf(Pair(1, 0), Pair(1, -1), Pair(0, 2), Pair(1, 2))
+            ),
+            Orientation.DOWN to mapOf(
+                    Orientation.RIGHT to listOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2)),
+                    Orientation.LEFT to listOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(1, -2))
+            ),
+            Orientation.LEFT to mapOf(
+                    Orientation.DOWN to listOf(Pair(-1, 0), Pair(-1, -1), Pair(0, 2), Pair(-1, 2)),
+                    Orientation.UP to listOf(Pair(-1, 0), Pair(-1, -1), Pair(0, 2), Pair(-1, 2))
+            )
+    )
+
+    val iData = mapOf(
+            Orientation.UP to mapOf(
+                    Orientation.LEFT to listOf(Pair(-1, 0), Pair(2, 0), Pair(-1, 2), Pair(2, -1)),
+                    Orientation.RIGHT to listOf(Pair(-2, 0), Pair(1, 0), Pair(-2, -1), Pair(1, 2))
+            ),
+            Orientation.RIGHT to mapOf(
+                    Orientation.UP to listOf(Pair(2, 0), Pair(-1, 0), Pair(2, 1), Pair(-1, -2)),
+                    Orientation.DOWN to listOf(Pair(-1, 0), Pair(2, 0), Pair(-1, 2), Pair(2, -1))
+            ),
+            Orientation.DOWN to mapOf(
+                    Orientation.RIGHT to listOf(Pair(1, 0), Pair(-2, 0), Pair(1, -2), Pair(-2, 1)),
+                    Orientation.LEFT to listOf(Pair(2, 0), Pair(-1, 0), Pair(2, 1), Pair(-1, -2))
+            ),
+            Orientation.LEFT to mapOf(
+                    Orientation.DOWN to listOf(Pair(-2, 0), Pair(1, 0), Pair(-2, -1), Pair(1, 2)),
+                    Orientation.UP to listOf(Pair(1, 0), Pair(-2, 0), Pair(1, -2), Pair(-2, 1))
+            )
+    )
+
+    override fun rotate90CW(t: StandardTetrimino, board: Board): StandardTetrimino = superRotate(t, board) { rotate90CW() }
+
+    override fun rotate90CCW(t: StandardTetrimino, board: Board): StandardTetrimino = superRotate(t, board) { rotate90CCW() }
+
+    private fun superRotate(t: StandardTetrimino, board: Board, op: StandardTetrimino.() -> StandardTetrimino): StandardTetrimino {
+        val rotated = t.op()
+        if (board.areValidCells(*rotated.cells().toTypedArray())) return rotated
+
+        val targetOrientation = rotated.orientation()
+        val data = if (t is I) iData else jlstzoData
+        val testDeltas: List<Pair<Int, Int>> = data[t.orientation()]!![targetOrientation]!!
+        for ((dx, dy) in testDeltas) {
+            var candidate = rotated
+
+            repeat(abs(dx)) {
+                candidate = if (dx < 0) {
+                    candidate.moveLeft()
+                } else {
+                    candidate.moveRight()
+                }
+            }
+
+            repeat(abs(dy)) {
+                candidate = if (dy < 0) {
+                    candidate.moveDown()
+                } else {
+                    candidate.moveUp()
+                }
+            }
+
+            if (board.areValidCells(*candidate.cells().toTypedArray())) return candidate
+        }
+
+        return t
+    }
 }
