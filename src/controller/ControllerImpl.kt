@@ -45,6 +45,7 @@ class ControllerImpl : Controller(), TetrisController {
             KeyCode.SPACE to { forActivePiece { t -> t.hardDrop() } },
             KeyCode.SHIFT to { println("hold") }
     ).withDefault { {} }
+    private val keyRepeatThreads = Collections.synchronizedMap(mutableMapOf<KeyCode, Thread>())
 
     override fun handle(event: KeyEvent?) {
         if (event != null && isRunning) {
@@ -63,20 +64,43 @@ class ControllerImpl : Controller(), TetrisController {
             action.invoke()
 
             if (code in repeatableKeys) {
-                Thread {
-                    if (code == KeyCode.LEFT || code == KeyCode.RIGHT) Thread.sleep(delayAutoShift)
+                val keyRepeat = Thread(object : Runnable {
+                    override fun run() {
+                        if (code == KeyCode.LEFT || code == KeyCode.RIGHT) {
+                            if (!delayCompletely(delayAutoShift)) return
+                        }
 
-                    while (pressedKeys.contains(code)) {
-                        action.invoke()
-                        Thread.sleep(autoRepeatRate)
+                        while (pressedKeys.contains(code)) {
+                            action.invoke()
+                            if (!delayCompletely(autoRepeatRate)) return
+                        }
                     }
-                }.start()
+                })
+
+                keyRepeatThreads[code] = keyRepeat
+                keyRepeat.start()
             }
         }
     }
 
+    /**
+     * @param duration How long to sleep the current thread.
+     * @return Whether or not the thread slept for the full specified duration.
+     */
+    private fun delayCompletely(duration: Long): Boolean {
+        try {
+            Thread.sleep(duration)
+        } catch (e: InterruptedException) {
+            return false
+        }
+
+        return true
+    }
+
     private fun handleKeyRelease(code: KeyCode) {
         pressedKeys -= code
+        keyRepeatThreads[code]?.interrupt()
+        keyRepeatThreads -= code
     }
 
     override fun run(board: Board, view: TetrisUI) {
