@@ -34,8 +34,7 @@ class ControllerImpl : Controller(), TetrisController {
     private val showGhost = true
     private val autoRepeatRate = 30L // Milliseconds between each auto repeat
     private val delayAutoShift = 140L // Milliseconds before activating auto repeat
-    private val pressedRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
-    private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
+    private val pressedKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
     private val keyToAction = mapOf(
             KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
@@ -58,31 +57,26 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun handleKeyPress(code: KeyCode) {
-        if (code in repeatableKeys) {
-            if (code !in pressedRepeatableKeys) {
-                pressedRepeatableKeys += code
-                keyToAction.getValue(code).invoke()
+        if (code !in pressedKeys) {
+            pressedKeys += code
+            val action = keyToAction.getValue(code)
+            action.invoke()
 
+            if (code in repeatableKeys) {
                 Thread {
-                    if (code != KeyCode.DOWN) Thread.sleep(delayAutoShift)
+                    if (code == KeyCode.LEFT || code == KeyCode.RIGHT) Thread.sleep(delayAutoShift)
 
-                    while (pressedRepeatableKeys.contains(code)) {
-                        keyToAction.getValue(code).invoke()
+                    while (pressedKeys.contains(code)) {
+                        action.invoke()
                         Thread.sleep(autoRepeatRate)
                     }
                 }.start()
-            }
-        } else {
-            if (code !in pressedNonRepeatableKeys) {
-                keyToAction.getValue(code).invoke()
-                pressedNonRepeatableKeys += code
             }
         }
     }
 
     private fun handleKeyRelease(code: KeyCode) {
-        pressedRepeatableKeys -= code
-        pressedNonRepeatableKeys -= code
+        pressedKeys -= code
     }
 
     override fun run(board: Board, view: TetrisUI) {
@@ -107,8 +101,7 @@ class ControllerImpl : Controller(), TetrisController {
         this.isRunning = true
         this.clockTimer = Timer()
         this.generator.reset()
-        this.pressedRepeatableKeys.clear()
-        this.pressedNonRepeatableKeys.clear()
+        this.pressedKeys.clear()
         this.activePiece = generator.generate()
 
         clockTimer.schedule(0, 1000) {
