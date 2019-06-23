@@ -40,20 +40,20 @@ interface Tetrimino {
 }
 
 /**
- * Represents the different game pieces of a Tetris game.
+ * Represents the common different game pieces of a Tetris game.
  */
 sealed class StandardTetrimino(private val t: Tetrimino) : Tetrimino {
-    abstract fun newPiece(t: Tetrimino): StandardTetrimino
+    protected abstract fun newPiece(t: Tetrimino): StandardTetrimino
 
-    override fun moveDown(): Tetrimino = newPiece(t.moveDown())
+    override fun moveDown(): StandardTetrimino = newPiece(t.moveDown())
 
-    override fun moveLeft(): Tetrimino = newPiece(t.moveLeft())
+    override fun moveLeft(): StandardTetrimino = newPiece(t.moveLeft())
 
-    override fun moveRight(): Tetrimino = newPiece(t.moveRight())
+    override fun moveRight(): StandardTetrimino = newPiece(t.moveRight())
 
-    override fun rotate90CW(): Tetrimino = newPiece(t.rotate90CW())
+    override fun rotate90CW(): StandardTetrimino = newPiece(t.rotate90CW())
 
-    override fun rotate90CCW(): Tetrimino = newPiece(t.rotate90CCW())
+    override fun rotate90CCW(): StandardTetrimino = newPiece(t.rotate90CCW())
 
     override fun cells(): Set<Cell> = t.cells()
 

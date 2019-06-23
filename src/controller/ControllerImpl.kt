@@ -12,8 +12,8 @@ import model.tetrimino.J
 import model.tetrimino.L
 import model.tetrimino.O
 import model.tetrimino.S
+import model.tetrimino.StandardTetrimino
 import model.tetrimino.T
-import model.tetrimino.Tetrimino
 import model.tetrimino.Z
 import tornadofx.Controller
 import view.TetrisUI
@@ -25,12 +25,12 @@ class ControllerImpl : Controller(), TetrisController {
     private lateinit var clockTimer: Timer
     private lateinit var board: Board
     private lateinit var view: TetrisUI
-    private lateinit var activePiece: Tetrimino
+    private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
-    private val generator: TetriminoGenerator = RandomBagOf7()
+    private val generator: StandardTetriminoGenerator = RandomBagOf7()
     private val showGhost = true
-    private val autoRepeatRate = 35L // Milliseconds between each auto repeat
-    private val delayAutoShift = 120L // Milliseconds before activating auto repeat
+    private val autoRepeatRate = 30L // Milliseconds between each auto repeat
+    private val delayAutoShift = 140L // Milliseconds before activating auto repeat
     private val pressedRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val pressedNonRepeatableKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
@@ -125,7 +125,7 @@ class ControllerImpl : Controller(), TetrisController {
         if (showGhost) it.addAll(activePiece.ghostCells())
     }
 
-    private fun forActivePiece(op: Tetrimino.() -> Tetrimino) {
+    private fun forActivePiece(op: StandardTetrimino.() -> StandardTetrimino) {
         synchronized(activePiece) {
             val next = activePiece.op()
             if (next.isValid()) activePiece = next
@@ -134,9 +134,9 @@ class ControllerImpl : Controller(), TetrisController {
         view.drawCells(allCells())
     }
 
-    private fun Tetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
+    private fun StandardTetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
 
-    private fun Tetrimino.hardDrop(): Tetrimino {
+    private fun StandardTetrimino.hardDrop(): StandardTetrimino {
         var t = this
         while (t.moveDown().isValid()) t = t.moveDown()
         t.placeOnBoard()
@@ -144,7 +144,7 @@ class ControllerImpl : Controller(), TetrisController {
         return newActivePiece()
     }
 
-    private fun Tetrimino.clearCompletedLines() {
+    private fun StandardTetrimino.clearCompletedLines() {
         val candidateLines = this.cells().map { it.row }.distinct().sorted()
         for (line in candidateLines) {
             val cellsInRow = board.getPlacedCells().filter { it.row == line }.size
@@ -152,19 +152,19 @@ class ControllerImpl : Controller(), TetrisController {
         }
     }
 
-    private fun Tetrimino.placeOnBoard() {
+    private fun StandardTetrimino.placeOnBoard() {
         val cells = this.cells().toTypedArray()
         board.placeCells(*cells)
     }
 
-    private fun newActivePiece(): Tetrimino {
+    private fun newActivePiece(): StandardTetrimino {
         val newPiece = generator.generate()
         // check for topping out
         if (!newPiece.isValid()) stop()
         return newPiece
     }
 
-    private fun Tetrimino.ghostCells(): Set<Cell> {
+    private fun StandardTetrimino.ghostCells(): Set<Cell> {
         var t = this
         while (t.moveDown().isValid()) t = t.moveDown()
         val ghostCells = t.cells().map { CellImpl(CellColor.NULL, it.row, it.col) }.toMutableSet()
@@ -173,17 +173,17 @@ class ControllerImpl : Controller(), TetrisController {
     }
 }
 
-interface TetriminoGenerator {
-    fun generate(): Tetrimino
+interface StandardTetriminoGenerator {
+    fun generate(): StandardTetrimino
 
     fun reset()
 }
 
-class RandomBagOf7 : TetriminoGenerator {
+class RandomBagOf7 : StandardTetriminoGenerator {
     private val allPieces = setOf(Z(), S(), L(), J(), T(), I(), O())
     private var currentBag = newBag()
 
-    override fun generate(): Tetrimino {
+    override fun generate(): StandardTetrimino {
         if (currentBag.isEmpty()) reset()
         return currentBag.removeAt(0)
     }
@@ -192,5 +192,5 @@ class RandomBagOf7 : TetriminoGenerator {
         currentBag = newBag()
     }
 
-    private fun newBag(): MutableList<Tetrimino> = allPieces.shuffled().toMutableList()
+    private fun newBag(): MutableList<StandardTetrimino> = allPieces.shuffled().toMutableList()
 }
