@@ -59,6 +59,13 @@ class ControllerImpl : Controller(), TetrisController {
 
     private fun handleKeyPress(code: KeyCode) {
         if (code !in pressedKeys) {
+            when (code) {
+                KeyCode.RIGHT -> pressedKeys -= KeyCode.LEFT
+                KeyCode.LEFT -> pressedKeys -= KeyCode.RIGHT
+                else -> {
+                }
+            }
+
             pressedKeys += code
             val action = keyToAction.getValue(code)
             action.invoke()
@@ -77,6 +84,7 @@ class ControllerImpl : Controller(), TetrisController {
                     }
                 })
 
+                keyRepeat.isDaemon = true
                 keyRepeatThreads[code] = keyRepeat
                 keyRepeat.start()
             }
