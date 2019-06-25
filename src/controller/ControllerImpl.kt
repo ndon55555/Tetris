@@ -46,9 +46,10 @@ class ControllerImpl : Controller(), TetrisController {
             KeyCode.SHIFT to { println("hold") }
     ).withDefault { {} }
     private val keyRepeatThreads = Collections.synchronizedMap(mutableMapOf<KeyCode, Thread>())
+    private var lockActivePieceThread = newLockActivePieceThread(500)
 
     override fun handle(event: KeyEvent?) {
-        if (event != null && isRunning) {
+        if (event != null) {
             when (event.eventType) {
                 KeyEvent.KEY_PRESSED -> handleKeyPress(event.code)
                 KeyEvent.KEY_RELEASED -> handleKeyRelease(event.code)
@@ -92,14 +93,14 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     /**
-     * @param duration How long to sleep the current thread.
+     * @param duration How many milliseconds to sleep the current thread.
      * @return Whether or not the thread slept for the full specified duration.
      */
     private fun delayCompletely(duration: Long): Boolean {
-        try {
-            Thread.sleep(duration)
-        } catch (e: InterruptedException) {
-            return false
+        val start = System.nanoTime()
+        // NOTE: (end - start) shr 20 = (end - start) / 2^20 ~ (end - start) / 10^6
+        while ((System.nanoTime() - start) shr 20 < duration) {
+            if (Thread.interrupted()) return false
         }
 
         return true
@@ -136,12 +137,7 @@ class ControllerImpl : Controller(), TetrisController {
         this.pressedKeys.clear()
         this.activePiece = generator.generate()
 
-        clockTimer.schedule(0, 1000) {
-            val prev = activePiece
-            keyToAction.getValue(KeyCode.DOWN).invoke()
-
-            if (activePiece == prev) keyToAction.getValue(KeyCode.SPACE).invoke()
-        }
+        clockTimer.schedule(0, 1000) { keyToAction.getValue(KeyCode.DOWN).invoke() }
     }
 
     override fun stop() {
@@ -155,9 +151,24 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino) {
+        if (!isRunning) return
+
         synchronized(activePiece) {
-            val next = op(activePiece)
-            if (next.isValid()) activePiece = next
+            val candidate = op(activePiece)
+            val next = if (candidate.isValid()) candidate else activePiece
+            val cannotMoveDown = !next.moveDown().isValid()
+            val couldNotMovePiece = next == activePiece
+
+            if (cannotMoveDown && couldNotMovePiece) {
+                if (!lockActivePieceThread.isAlive) {
+                    lockActivePieceThread = newLockActivePieceThread(500)
+                    lockActivePieceThread.start()
+                }
+            } else {
+                lockActivePieceThread.interrupt()
+            }
+
+            activePiece = next
         }
 
         view.drawCells(allCells())
@@ -200,6 +211,10 @@ class ControllerImpl : Controller(), TetrisController {
         ghostCells.removeAll { this.cells().any { c -> it.sharesPositionWith(c) } }
         return ghostCells
     }
+
+    private fun newLockActivePieceThread(delay: Long): Thread = Thread {
+        if (delayCompletely(delay)) keyToAction.getValue(KeyCode.SPACE).invoke()
+    }.apply { isDaemon = true }
 }
 
 interface StandardTetriminoGenerator {
@@ -231,7 +246,7 @@ interface RotationSystem {
 }
 
 class SuperRotation : RotationSystem {
-    val jlstzoData = mapOf(
+    private val jlstzoData = mapOf(
             Orientation.UP to mapOf(
                     Orientation.LEFT to listOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(1, -2)),
                     Orientation.RIGHT to listOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
@@ -250,7 +265,7 @@ class SuperRotation : RotationSystem {
             )
     )
 
-    val iData = mapOf(
+    private val iData = mapOf(
             Orientation.UP to mapOf(
                     Orientation.LEFT to listOf(Pair(-1, 0), Pair(2, 0), Pair(-1, 2), Pair(2, -1)),
                     Orientation.RIGHT to listOf(Pair(-2, 0), Pair(1, 0), Pair(-2, -1), Pair(1, 2))
@@ -279,7 +294,7 @@ class SuperRotation : RotationSystem {
 
         val targetOrientation = rotated.orientation()
         val data = if (t is I) iData else jlstzoData
-        val testDeltas: List<Pair<Int, Int>> = data[t.orientation()]!![targetOrientation]!!
+        val testDeltas: List<Pair<Int, Int>> = data.getValue(t.orientation()).getValue(targetOrientation)
         for ((dx, dy) in testDeltas) {
             var candidate = rotated
 
