@@ -11,7 +11,14 @@ import model.board.Board
 import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
+import model.tetrimino.I
+import model.tetrimino.J
+import model.tetrimino.L
+import model.tetrimino.O
+import model.tetrimino.S
 import model.tetrimino.StandardTetrimino
+import model.tetrimino.T
+import model.tetrimino.Z
 import tornadofx.Controller
 import view.TetrisUI
 import java.util.Collections
@@ -26,14 +33,19 @@ class ControllerImpl : Controller(), TetrisController {
     private lateinit var activePiece: StandardTetrimino
     private lateinit var generator: StandardTetriminoGenerator
     private var showGhost = true
-    private val autoRepeatRate = 30L // Milliseconds between each auto repeat
-    private val delayAutoShift = 140L // Milliseconds before activating auto repeat
+    private var autoRepeatRate = 30L // Milliseconds between each auto repeat
+    private var delayAutoShift = 140L // Milliseconds before activating auto repeat
+    private var lockDelay = 500L // Milliseconds before locking a piece on the board
 
     // Auxiliary state
     private lateinit var clockTimer: Timer
     private var isRunning = false
     private val pressedKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
+    private val keyRepeatThreads = Collections.synchronizedMap(mutableMapOf<KeyCode, Thread>())
+    private var lockActivePieceThread = newLockActivePieceThread()
+    private var alreadyHolding = false
+    private var heldPiece: StandardTetrimino? = null
     private val keyToAction = mapOf(
             KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
             KeyCode.UP to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
@@ -41,10 +53,8 @@ class ControllerImpl : Controller(), TetrisController {
             KeyCode.RIGHT to { forActivePiece { t -> t.moveRight() } },
             KeyCode.DOWN to { forActivePiece { t -> t.moveDown() } },
             KeyCode.SPACE to { forActivePiece { t -> t.hardDrop() } },
-            KeyCode.SHIFT to { println("hold") }
+            KeyCode.SHIFT to { forActivePiece { t -> t.hold() } }
     ).withDefault { {} }
-    private val keyRepeatThreads = Collections.synchronizedMap(mutableMapOf<KeyCode, Thread>())
-    private var lockActivePieceThread = newLockActivePieceThread(500)
 
     override fun handle(event: KeyEvent?) {
         if (event != null) {
@@ -98,7 +108,11 @@ class ControllerImpl : Controller(), TetrisController {
         while (t.moveDown().isValid()) t = t.moveDown()
         t.placeOnBoard()
         t.clearCompletedLines()
-        return newActivePiece()
+        val newPiece = generator.generate()
+        // check for topping out
+        if (!newPiece.isValid()) stop()
+        alreadyHolding = false
+        return newPiece
     }
 
     private fun StandardTetrimino.clearCompletedLines() {
@@ -120,6 +134,31 @@ class ControllerImpl : Controller(), TetrisController {
         val ghostCells = t.cells().map { CellImpl(CellColor.NULL, it.row, it.col) }.toMutableSet()
         ghostCells.removeAll { this.cells().any { c -> it.sharesPositionWith(c) } }
         return ghostCells
+    }
+
+    private fun StandardTetrimino.hold(): StandardTetrimino {
+        if (alreadyHolding) return this
+
+        val newPiece: StandardTetrimino
+        if (heldPiece == null) {
+            heldPiece = this
+            newPiece = generator.generate()
+        } else {
+            val temp = heldPiece!!
+            heldPiece = this
+            newPiece = when (temp) {
+                is S -> S()
+                is Z -> Z()
+                is J -> J()
+                is L -> L()
+                is O -> O()
+                is I -> I()
+                is T -> T()
+            }
+        }
+
+        alreadyHolding = true
+        return newPiece
     }
 
     private fun handleKeyPress(code: KeyCode) {
@@ -181,6 +220,10 @@ class ControllerImpl : Controller(), TetrisController {
         if (showGhost) it.addAll(activePiece.ghostCells())
     }
 
+    /**
+     * Synchronized transformation of the active piece. Tells the view to draw the board and handles the locking mechanism of the active piece.
+     * @op The action to perform on the active piece.
+     */
     private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino) {
         if (!isRunning) return
 
@@ -192,7 +235,7 @@ class ControllerImpl : Controller(), TetrisController {
 
             if (cannotMoveDown && couldNotMovePiece) {
                 if (!lockActivePieceThread.isAlive) {
-                    lockActivePieceThread = newLockActivePieceThread(500)
+                    lockActivePieceThread = newLockActivePieceThread()
                     lockActivePieceThread.start()
                 }
             } else {
@@ -205,14 +248,7 @@ class ControllerImpl : Controller(), TetrisController {
         view.drawCells(allCells())
     }
 
-    private fun newActivePiece(): StandardTetrimino {
-        val newPiece = generator.generate()
-        // check for topping out
-        if (!newPiece.isValid()) stop()
-        return newPiece
-    }
-
-    private fun newLockActivePieceThread(delay: Long): Thread = Thread {
+    private fun newLockActivePieceThread(delay: Long = lockDelay): Thread = Thread {
         if (delayCompletely(delay)) keyToAction.getValue(KeyCode.SPACE).invoke()
     }.apply { isDaemon = true }
 }
