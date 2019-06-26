@@ -1,6 +1,6 @@
 import tornadofx.launch
 import view.TetrisApp
 
-fun main(args: Array<String>) {
+fun main() {
     launch<TetrisApp>()
 }
