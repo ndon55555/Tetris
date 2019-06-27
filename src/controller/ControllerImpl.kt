@@ -85,14 +85,17 @@ class ControllerImpl : Controller(), TetrisController {
             override fun getPlacedCells() = board.getPlacedCells()
         }
         this.view = object : TetrisUI {
-            @Synchronized
-            override fun drawCells(cells: Set<Cell>) = view.drawCells(cells)
+            val cellsLock = Object()
+            val heldCellsLock = Object()
+            val upcomingCellsLock = Object()
 
-            @Synchronized
-            override fun drawHeldCells(cells: Set<Cell>) = view.drawHeldCells(cells)
+            override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) { view.drawCells(cells) }
 
-            @Synchronized
-            override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = view.drawUpcomingCells(cellsQueue)
+            override fun drawHeldCells(cells: Set<Cell>) = synchronized(heldCellsLock) { view.drawHeldCells(cells) }
+
+            override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = synchronized(upcomingCellsLock) {
+                view.drawUpcomingCells(cellsQueue)
+            }
         }
         this.rotationSystem = SuperRotation()
         this.generator = RandomBagOf7()
@@ -156,7 +159,7 @@ class ControllerImpl : Controller(), TetrisController {
         if (alreadyHolding) return this
 
         val newPiece: StandardTetrimino
-        val toHold = when(this) {
+        val toHold = when (this) {
             is S -> S()
             is Z -> Z()
             is J -> J()
@@ -272,8 +275,8 @@ class ControllerImpl : Controller(), TetrisController {
 
     private fun nextPiece(): StandardTetrimino {
         upcomingPiecesQueue.add(generator.generate())
-        val next =  upcomingPiecesQueue.remove()
-        val upcomingCells = upcomingPiecesQueue.map{it.cells()}
+        val next = upcomingPiecesQueue.remove()
+        val upcomingCells = upcomingPiecesQueue.map { it.cells() }
         view.drawUpcomingCells(LinkedList(upcomingCells))
         return next
     }
