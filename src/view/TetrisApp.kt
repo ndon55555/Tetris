@@ -3,7 +3,9 @@ package view
 import controller.ControllerImpl
 import javafx.application.Platform
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.GridPane
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.shape.Rectangle
@@ -17,11 +19,18 @@ import model.cell.CellColor
 import tornadofx.App
 import tornadofx.View
 import tornadofx.action
+import tornadofx.borderpane
+import tornadofx.bottom
 import tornadofx.button
+import tornadofx.center
 import tornadofx.clear
 import tornadofx.gridpane
 import tornadofx.hbox
+import tornadofx.pane
 import tornadofx.row
+import tornadofx.top
+import tornadofx.vbox
+import java.util.Queue
 
 class TetrisApp : App(BoardView::class) {
     override fun start(stage: Stage) {
@@ -32,33 +41,55 @@ class TetrisApp : App(BoardView::class) {
 
 class BoardView : View("Tetris"), TetrisUI {
     private val controller: ControllerImpl by inject()
+
     private val boardWidth = BOARD_WIDTH
     private val boardHeight = BOARD_HEIGHT
     private lateinit var grid: GridPane
-
+    private lateinit var heldPiecePane: BorderPane
+    private lateinit var rightOfBoard: BorderPane
     override val root = with(this) {
         val view = this
         hbox {
+            spacing = 5.0
+
+            borderpane {
+                top {
+                    heldPiecePane = this
+                    add(previewBackground())
+                }
+            }
+
             gridpane {
+                grid = this
                 repeat(boardHeight) {
                     row {
-                        repeat(boardWidth) {
-                            add(backgroundCell())
-                        }
+                        repeat(boardWidth) { add(backgroundCell()) }
                     }
                 }
 
-                grid = this
                 requestFocus()
             }
 
-            button("Restart") {
-                action {
-                    controller.stop()
-                    controller.run(BoardImpl(), view)
+            borderpane {
+                rightOfBoard = this
+                spacing = 5.0
+
+                center {
+                    vbox {
+                        repeat(controller.previewPieces) { add(previewBackground()) }
+                    }
                 }
 
-                isFocusTraversable = false
+                bottom {
+                    button("Restart") {
+                        action {
+                            controller.stop()
+                            controller.run(BoardImpl(), view)
+                        }
+
+                        isFocusTraversable = false
+                    }
+                }
             }
         }
     }
@@ -91,11 +122,21 @@ class BoardView : View("Tetris"), TetrisUI {
         }
     }
 
+    override fun drawHeldCells(cells: Set<Cell>) = Platform.runLater { heldPiecePane.top = preview(cells) }
+
+    override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) {
+        val v = VBox()
+        for (cells in cellsQueue) v.add(preview(cells))
+        Platform.runLater { rightOfBoard.center = v }
+    }
+
 }
 
+const val CELL_SIZE = 30.0 // pixels
 
-const val CELL_SIZE = 30.0
 
+const val PREVIEW_BOX_SIZE = 4 // # of Cells
+const val PREVIEW_SCALE = 0.80 // times original size
 internal fun backgroundCell(): Rectangle =
         Rectangle(CELL_SIZE, CELL_SIZE, Color.BLACK)
 
@@ -117,4 +158,35 @@ internal fun getPaint(c: CellColor): Paint = when (c) {
     CellColor.YELLOW -> Paint.valueOf("yellow")
     CellColor.PURPLE -> Paint.valueOf("purple")
     CellColor.NULL -> Paint.valueOf("grey")
+}
+
+internal fun previewBackground(): GridPane {
+    val g = GridPane()
+
+    repeat(PREVIEW_BOX_SIZE) { row ->
+        repeat(PREVIEW_BOX_SIZE) { col ->
+            g.add(backgroundCell().apply {
+                width *= PREVIEW_SCALE
+                height *= PREVIEW_SCALE
+            }, col, row)
+        }
+    }
+
+    return g
+}
+
+internal fun preview(cells: Set<Cell>): GridPane = previewBackground().apply {
+    val rows = cells.map { it.row }
+    val cols = cells.map { it.col }
+    val minRow = rows.min() ?: 0
+    val maxRow = rows.max() ?: PREVIEW_BOX_SIZE
+    val minCol = cols.min() ?: 0
+    val maxCol = cols.max() ?: PREVIEW_BOX_SIZE
+    val dRow = minRow - (PREVIEW_BOX_SIZE - (maxRow - minRow + 1)) / 2
+    val dCol = minCol - (PREVIEW_BOX_SIZE - (maxCol - minCol + 1)) / 2
+
+    for (c in cells) add(foregroundCell(c).apply {
+        height *= PREVIEW_SCALE
+        width *= PREVIEW_SCALE
+    }, c.col - dCol, c.row - dRow)
 }

@@ -22,23 +22,26 @@ import model.tetrimino.Z
 import tornadofx.Controller
 import view.TetrisUI
 import java.util.Collections
+import java.util.LinkedList
+import java.util.Queue
 import java.util.Timer
 import kotlin.concurrent.schedule
 
 class ControllerImpl : Controller(), TetrisController {
     // Game settings
-    private lateinit var board: Board
-    private lateinit var view: TetrisUI
-    private lateinit var rotationSystem: RotationSystem
-    private lateinit var activePiece: StandardTetrimino
-    private lateinit var generator: StandardTetriminoGenerator
-    private var showGhost = true
-    private var autoRepeatRate = 30L // Milliseconds between each auto repeat
-    private var delayAutoShift = 140L // Milliseconds before activating auto repeat
-    private var lockDelay = 500L // Milliseconds before locking a piece on the board
+    lateinit var board: Board
+    lateinit var view: TetrisUI
+    lateinit var rotationSystem: RotationSystem
+    lateinit var generator: StandardTetriminoGenerator
+    var showGhost = true
+    var autoRepeatRate = 30L // Milliseconds between each auto repeat
+    var delayAutoShift = 140L // Milliseconds before activating auto repeat
+    var previewPieces = 5
 
+    var lockDelay = 500L // Milliseconds before locking a piece on the board
     // Auxiliary state
     private lateinit var clockTimer: Timer
+    private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
     private val pressedKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
     private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
@@ -46,6 +49,7 @@ class ControllerImpl : Controller(), TetrisController {
     private var lockActivePieceThread = newLockActivePieceThread()
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
+    private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
     private val keyToAction = mapOf(
             KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
             KeyCode.UP to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
@@ -83,6 +87,12 @@ class ControllerImpl : Controller(), TetrisController {
         this.view = object : TetrisUI {
             @Synchronized
             override fun drawCells(cells: Set<Cell>) = view.drawCells(cells)
+
+            @Synchronized
+            override fun drawHeldCells(cells: Set<Cell>) = view.drawHeldCells(cells)
+
+            @Synchronized
+            override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = view.drawUpcomingCells(cellsQueue)
         }
         this.rotationSystem = SuperRotation()
         this.generator = RandomBagOf7()
@@ -90,6 +100,12 @@ class ControllerImpl : Controller(), TetrisController {
         this.clockTimer = Timer()
         this.pressedKeys.clear()
         this.activePiece = generator.generate()
+        this.heldPiece = null
+        repeat(previewPieces) { upcomingPiecesQueue.add(generator.generate()) }
+
+        view.drawCells(allCells())
+        view.drawHeldCells(emptySet())
+        view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
         clockTimer.schedule(0, 1000) {
             if (KeyCode.DOWN !in pressedKeys) keyToAction.getValue(KeyCode.DOWN).invoke()
@@ -108,7 +124,7 @@ class ControllerImpl : Controller(), TetrisController {
         while (t.moveDown().isValid()) t = t.moveDown()
         t.placeOnBoard()
         t.clearCompletedLines()
-        val newPiece = generator.generate()
+        val newPiece = nextPiece()
         // check for topping out
         if (!newPiece.isValid()) stop()
         alreadyHolding = false
@@ -140,23 +156,25 @@ class ControllerImpl : Controller(), TetrisController {
         if (alreadyHolding) return this
 
         val newPiece: StandardTetrimino
+        val toHold = when(this) {
+            is S -> S()
+            is Z -> Z()
+            is J -> J()
+            is L -> L()
+            is O -> O()
+            is I -> I()
+            is T -> T()
+        }
         if (heldPiece == null) {
-            heldPiece = this
-            newPiece = generator.generate()
+            heldPiece = toHold
+            newPiece = nextPiece()
         } else {
             val temp = heldPiece!!
-            heldPiece = this
-            newPiece = when (temp) {
-                is S -> S()
-                is Z -> Z()
-                is J -> J()
-                is L -> L()
-                is O -> O()
-                is I -> I()
-                is T -> T()
-            }
+            heldPiece = toHold
+            newPiece = temp
         }
 
+        view.drawHeldCells(heldPiece!!.cells())
         alreadyHolding = true
         return newPiece
     }
@@ -251,4 +269,12 @@ class ControllerImpl : Controller(), TetrisController {
     private fun newLockActivePieceThread(delay: Long = lockDelay): Thread = Thread {
         if (delayCompletely(delay)) keyToAction.getValue(KeyCode.SPACE).invoke()
     }.apply { isDaemon = true }
+
+    private fun nextPiece(): StandardTetrimino {
+        upcomingPiecesQueue.add(generator.generate())
+        val next =  upcomingPiecesQueue.remove()
+        val upcomingCells = upcomingPiecesQueue.map{it.cells()}
+        view.drawUpcomingCells(LinkedList(upcomingCells))
+        return next
+    }
 }
