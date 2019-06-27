@@ -116,6 +116,11 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     override fun stop() {
+        pressedKeys.clear()
+        for (t in keyRepeatThreads.values) t.interrupt()
+        keyRepeatThreads.clear()
+        lockActivePieceThread.interrupt()
+        upcomingPiecesQueue.clear()
         clockTimer.cancel()
         this.isRunning = false
     }
