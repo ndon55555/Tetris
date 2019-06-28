@@ -24,7 +24,7 @@ dependencies {
 apply(plugin = "org.openjfx.javafxplugin")
 
 javafx {
-    modules("javafx.controls", "javafx.fxml")
+    modules("javafx.controls")
 }
 
 configure<JavaPluginConvention> {
