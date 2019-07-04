@@ -12,8 +12,8 @@ import javafx.scene.paint.Paint
 import javafx.scene.shape.Rectangle
 import javafx.scene.shape.StrokeType
 import javafx.stage.Stage
-import model.board.BOARD_HEIGHT
 import model.board.BOARD_WIDTH
+import model.board.VISIBLE_BOARD_HEIGHT
 import model.board.BoardImpl
 import model.cell.Cell
 import model.cell.CellColor
@@ -42,8 +42,8 @@ class TetrisApp : App(BoardView::class) {
 class BoardView : View("Tetris"), TetrisUI {
     private val controller: ControllerImpl by inject()
 
-    private val boardWidth = BOARD_WIDTH
-    private val boardHeight = BOARD_HEIGHT
+    private val boardWidth = BOARD_WIDTH // # cells
+    private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells
     private lateinit var grid: GridPane
     private lateinit var heldPiecePane: BorderPane
     private lateinit var rightOfBoard: BorderPane

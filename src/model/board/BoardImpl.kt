@@ -2,9 +2,6 @@ package model.board
 
 import model.cell.Cell
 
-const val BOARD_WIDTH = 10
-const val BOARD_HEIGHT = 22
-
 /**
  * Represents the Tetris game board. Top-left position of the board considered (0, 0).
  * This means that a position at row 0 is "above" a position at row 1.
@@ -22,10 +19,7 @@ class BoardImpl : Board {
     }
 
     override fun placeCells(vararg cells: Cell) {
-        if (!areValidCells(*cells)) {
-            throw IllegalArgumentException("invalid cells for this board")
-        }
-
+        if (!areValidCells(*cells)) throw IllegalArgumentException("invalid cells for this board")
         placedCells += cells
     }
 

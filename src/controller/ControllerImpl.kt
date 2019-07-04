@@ -6,8 +6,10 @@ import controller.config.StandardTetriminoGenerator
 import controller.config.SuperRotation
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import model.board.BOARD_HEIGHT
 import model.board.BOARD_WIDTH
 import model.board.Board
+import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
@@ -37,8 +39,8 @@ class ControllerImpl : Controller(), TetrisController {
     var autoRepeatRate = 30L // Milliseconds between each auto repeat
     var delayAutoShift = 140L // Milliseconds before activating auto repeat
     var previewPieces = 5
-
     var lockDelay = 500L // Milliseconds before locking a piece on the board
+
     // Auxiliary state
     private lateinit var clockTimer: Timer
     private lateinit var activePiece: StandardTetrimino
@@ -89,7 +91,12 @@ class ControllerImpl : Controller(), TetrisController {
             val heldCellsLock = Object()
             val upcomingCellsLock = Object()
 
-            override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) { view.drawCells(cells) }
+            override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) {
+                view.drawCells(cells
+                        .map { it.move(VISIBLE_BOARD_HEIGHT - BOARD_HEIGHT, 0) }
+                        .filter { it.row >= 0 }
+                        .toSet())
+            }
 
             override fun drawHeldCells(cells: Set<Cell>) = synchronized(heldCellsLock) { view.drawHeldCells(cells) }
 
