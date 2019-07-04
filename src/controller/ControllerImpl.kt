@@ -6,13 +6,12 @@ import controller.config.StandardTetriminoGenerator
 import controller.config.SuperRotation
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import model.board.BOARD_HEIGHT
 import model.board.BOARD_WIDTH
 import model.board.Board
-import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
+import model.board.FIRST_VISIBLE_ROW
 import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.L
@@ -93,7 +92,7 @@ class ControllerImpl : Controller(), TetrisController {
 
             override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) {
                 view.drawCells(cells
-                        .map { it.move(VISIBLE_BOARD_HEIGHT - BOARD_HEIGHT, 0) }
+                        .map { it.move(-FIRST_VISIBLE_ROW, 0) }
                         .filter { it.row >= 0 }
                         .toSet())
             }
