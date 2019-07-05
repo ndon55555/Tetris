@@ -8,10 +8,10 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import model.board.BOARD_WIDTH
 import model.board.Board
+import model.board.FIRST_VISIBLE_ROW
 import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
-import model.board.FIRST_VISIBLE_ROW
 import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.L
@@ -39,6 +39,15 @@ class ControllerImpl : Controller(), TetrisController {
     var delayAutoShift = 140L // Milliseconds before activating auto repeat
     var previewPieces = 5
     var lockDelay = 500L // Milliseconds before locking a piece on the board
+    var keyToCommand = mutableMapOf(
+            KeyCode.Z to Command.ROTATE_CCW,
+            KeyCode.UP to Command.ROTATE_CW,
+            KeyCode.LEFT to Command.LEFT,
+            KeyCode.RIGHT to Command.RIGHT,
+            KeyCode.DOWN to Command.SOFT_DROP,
+            KeyCode.SPACE to Command.HARD_DROP,
+            KeyCode.SHIFT to Command.HOLD
+    ).withDefault { Command.DO_NOTHING }
 
     // Auxiliary state
     private lateinit var clockTimer: Timer
@@ -51,15 +60,24 @@ class ControllerImpl : Controller(), TetrisController {
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
-    private val keyToAction = mapOf(
-            KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
-            KeyCode.UP to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
-            KeyCode.LEFT to { forActivePiece { t -> t.moveLeft() } },
-            KeyCode.RIGHT to { forActivePiece { t -> t.moveRight() } },
-            KeyCode.DOWN to { forActivePiece { t -> t.moveDown() } },
-            KeyCode.SPACE to { forActivePiece { t -> t.hardDrop() } },
-            KeyCode.SHIFT to { forActivePiece { t -> t.hold() } }
-    ).withDefault { {} }
+    //    private val keyToAction = mapOf(
+//            KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
+//            KeyCode.UP to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
+//            KeyCode.LEFT to { forActivePiece { t -> t.moveLeft() } },
+//            KeyCode.RIGHT to { forActivePiece { t -> t.moveRight() } },
+//            KeyCode.DOWN to { forActivePiece { t -> t.moveDown() } },
+//            KeyCode.SPACE to { forActivePiece { t -> t.hardDrop() } },
+//            KeyCode.SHIFT to { forActivePiece { t -> t.hold() } }
+//    ).withDefault { {} }
+    private val commandToAction = mapOf(
+            Command.ROTATE_CCW to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
+            Command.ROTATE_CW to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
+            Command.LEFT to { forActivePiece { t -> t.moveLeft() } },
+            Command.RIGHT to { forActivePiece { t -> t.moveRight() } },
+            Command.SOFT_DROP to { forActivePiece { t -> t.moveDown() } },
+            Command.HARD_DROP to { forActivePiece { t -> t.hardDrop() } },
+            Command.HOLD to { forActivePiece { t -> t.hold() } }
+    )
 
     override fun handle(event: KeyEvent?) {
         if (event != null) {
@@ -117,7 +135,7 @@ class ControllerImpl : Controller(), TetrisController {
         view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
         clockTimer.schedule(0, 1000) {
-            if (KeyCode.DOWN !in pressedKeys) keyToAction.getValue(KeyCode.DOWN).invoke()
+            if (KeyCode.DOWN !in pressedKeys) commandToAction.getValue(Command.SOFT_DROP).invoke()
         }
     }
 
@@ -193,44 +211,45 @@ class ControllerImpl : Controller(), TetrisController {
         return newPiece
     }
 
-    private fun handleKeyPress(code: KeyCode) {
-        if (code !in pressedKeys) {
-            when (code) {
+    private fun handleKeyPress(key: KeyCode) {
+        if (key !in pressedKeys) {
+            when (key) {
                 KeyCode.RIGHT -> pressedKeys -= KeyCode.LEFT
                 KeyCode.LEFT -> pressedKeys -= KeyCode.RIGHT
                 else -> {
                 }
             }
 
-            pressedKeys += code
-            val action = keyToAction.getValue(code)
-            action.invoke()
+            pressedKeys += key
+            val cmd = keyToCommand.getValue(key)
+            val action = commandToAction[cmd]
+            action?.invoke()
 
-            if (code in repeatableKeys) {
+            if (key in repeatableKeys) {
                 val keyRepeat = Thread(object : Runnable {
                     override fun run() {
-                        if (code == KeyCode.LEFT || code == KeyCode.RIGHT) {
+                        if (key == KeyCode.LEFT || key == KeyCode.RIGHT) {
                             if (!delayCompletely(delayAutoShift)) return
                         }
 
-                        while (pressedKeys.contains(code)) {
-                            action.invoke()
+                        while (pressedKeys.contains(key)) {
+                            action?.invoke()
                             if (!delayCompletely(autoRepeatRate)) return
                         }
                     }
                 })
 
                 keyRepeat.isDaemon = true
-                keyRepeatThreads[code] = keyRepeat
+                keyRepeatThreads[key] = keyRepeat
                 keyRepeat.start()
             }
         }
     }
 
-    private fun handleKeyRelease(code: KeyCode) {
-        pressedKeys -= code
-        keyRepeatThreads[code]?.interrupt()
-        keyRepeatThreads -= code
+    private fun handleKeyRelease(key: KeyCode) {
+        pressedKeys -= key
+        keyRepeatThreads[key]?.interrupt()
+        keyRepeatThreads -= key
     }
 
     /**
@@ -281,7 +300,7 @@ class ControllerImpl : Controller(), TetrisController {
     }
 
     private fun newLockActivePieceThread(delay: Long = lockDelay): Thread = Thread {
-        if (delayCompletely(delay)) keyToAction.getValue(KeyCode.SPACE).invoke()
+        if (delayCompletely(delay)) commandToAction.getValue(Command.HARD_DROP).invoke()
     }.apply { isDaemon = true }
 
     private fun nextPiece(): StandardTetrimino {
@@ -291,4 +310,8 @@ class ControllerImpl : Controller(), TetrisController {
         view.drawUpcomingCells(LinkedList(upcomingCells))
         return next
     }
+}
+
+enum class Command {
+    ROTATE_CCW, ROTATE_CW, LEFT, RIGHT, SOFT_DROP, HARD_DROP, HOLD, DO_NOTHING
 }
