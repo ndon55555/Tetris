@@ -60,15 +60,6 @@ class ControllerImpl : Controller(), TetrisController {
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
-    //    private val keyToAction = mapOf(
-//            KeyCode.Z to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
-//            KeyCode.UP to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
-//            KeyCode.LEFT to { forActivePiece { t -> t.moveLeft() } },
-//            KeyCode.RIGHT to { forActivePiece { t -> t.moveRight() } },
-//            KeyCode.DOWN to { forActivePiece { t -> t.moveDown() } },
-//            KeyCode.SPACE to { forActivePiece { t -> t.hardDrop() } },
-//            KeyCode.SHIFT to { forActivePiece { t -> t.hold() } }
-//    ).withDefault { {} }
     private val commandToAction = mapOf(
             Command.ROTATE_CCW to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
             Command.ROTATE_CW to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
