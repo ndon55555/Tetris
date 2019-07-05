@@ -4,8 +4,6 @@ import controller.config.RandomBagOf7
 import controller.config.RotationSystem
 import controller.config.StandardTetriminoGenerator
 import controller.config.SuperRotation
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
 import model.board.BOARD_WIDTH
 import model.board.Board
 import model.board.FIRST_VISIBLE_ROW
@@ -20,15 +18,21 @@ import model.tetrimino.S
 import model.tetrimino.StandardTetrimino
 import model.tetrimino.T
 import model.tetrimino.Z
-import tornadofx.Controller
 import view.TetrisUI
+import java.awt.event.KeyEvent.VK_DOWN
+import java.awt.event.KeyEvent.VK_LEFT
+import java.awt.event.KeyEvent.VK_RIGHT
+import java.awt.event.KeyEvent.VK_SHIFT
+import java.awt.event.KeyEvent.VK_SPACE
+import java.awt.event.KeyEvent.VK_UP
+import java.awt.event.KeyEvent.VK_Z
 import java.util.Collections
 import java.util.LinkedList
 import java.util.Queue
 import java.util.Timer
 import kotlin.concurrent.schedule
 
-class ControllerImpl : Controller(), TetrisController {
+class ControllerImpl : TetrisController {
     // Game settings
     lateinit var board: Board
     lateinit var view: TetrisUI
@@ -40,22 +44,22 @@ class ControllerImpl : Controller(), TetrisController {
     var previewPieces = 5
     var lockDelay = 500L // Milliseconds before locking a piece on the board
     var keyToCommand = mutableMapOf(
-            KeyCode.Z to Command.ROTATE_CCW,
-            KeyCode.UP to Command.ROTATE_CW,
-            KeyCode.LEFT to Command.LEFT,
-            KeyCode.RIGHT to Command.RIGHT,
-            KeyCode.DOWN to Command.SOFT_DROP,
-            KeyCode.SPACE to Command.HARD_DROP,
-            KeyCode.SHIFT to Command.HOLD
+            VK_Z to Command.ROTATE_CCW,
+            VK_UP to Command.ROTATE_CW,
+            VK_LEFT to Command.LEFT,
+            VK_RIGHT to Command.RIGHT,
+            VK_DOWN to Command.SOFT_DROP,
+            VK_SPACE to Command.HARD_DROP,
+            VK_SHIFT to Command.HOLD
     ).withDefault { Command.DO_NOTHING }
 
     // Auxiliary state
     private lateinit var clockTimer: Timer
     private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
-    private val pressedKeys = Collections.synchronizedSet(mutableSetOf<KeyCode>())
-    private val repeatableKeys = setOf(KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT)
-    private val keyRepeatThreads = Collections.synchronizedMap(mutableMapOf<KeyCode, Thread>())
+    private val pressedCmds = Collections.synchronizedSet(mutableSetOf<Command>())
+    private val repeatableCmds = setOf(Command.SOFT_DROP, Command.LEFT, Command.RIGHT)
+    private val cmdRepeatThreads = Collections.synchronizedMap(mutableMapOf<Command, Thread>())
     private var lockActivePieceThread = newLockActivePieceThread()
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
@@ -69,16 +73,6 @@ class ControllerImpl : Controller(), TetrisController {
             Command.HARD_DROP to { forActivePiece { t -> t.hardDrop() } },
             Command.HOLD to { forActivePiece { t -> t.hold() } }
     )
-
-    override fun handle(event: KeyEvent?) {
-        if (event != null) {
-            when (event.eventType) {
-                KeyEvent.KEY_PRESSED -> handleKeyPress(event.code)
-                KeyEvent.KEY_RELEASED -> handleKeyRelease(event.code)
-                else -> return
-            }
-        }
-    }
 
     override fun run(board: Board, view: TetrisUI) {
         this.board = object : Board {
@@ -116,7 +110,7 @@ class ControllerImpl : Controller(), TetrisController {
         this.generator = RandomBagOf7()
         this.isRunning = true
         this.clockTimer = Timer()
-        this.pressedKeys.clear()
+        this.pressedCmds.clear()
         this.activePiece = generator.generate()
         this.heldPiece = null
         repeat(previewPieces) { upcomingPiecesQueue.add(generator.generate()) }
@@ -126,14 +120,14 @@ class ControllerImpl : Controller(), TetrisController {
         view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
         clockTimer.schedule(0, 1000) {
-            if (KeyCode.DOWN !in pressedKeys) commandToAction.getValue(Command.SOFT_DROP).invoke()
+            if (Command.SOFT_DROP !in pressedCmds) commandToAction.getValue(Command.SOFT_DROP).invoke()
         }
     }
 
     override fun stop() {
-        pressedKeys.clear()
-        for (t in keyRepeatThreads.values) t.interrupt()
-        keyRepeatThreads.clear()
+        pressedCmds.clear()
+        for (t in cmdRepeatThreads.values) t.interrupt()
+        cmdRepeatThreads.clear()
         lockActivePieceThread.interrupt()
         upcomingPiecesQueue.clear()
         clockTimer.cancel()
@@ -202,45 +196,47 @@ class ControllerImpl : Controller(), TetrisController {
         return newPiece
     }
 
-    private fun handleKeyPress(key: KeyCode) {
-        if (key !in pressedKeys) {
-            when (key) {
-                KeyCode.RIGHT -> pressedKeys -= KeyCode.LEFT
-                KeyCode.LEFT -> pressedKeys -= KeyCode.RIGHT
+    override fun handleKeyPress(keyCode: Int) {
+        val cmd = keyToCommand[keyCode] ?: return
+
+        if (cmd !in pressedCmds) {
+            when (cmd) {
+                Command.RIGHT -> pressedCmds -= Command.LEFT
+                Command.LEFT -> pressedCmds -= Command.RIGHT
                 else -> {
                 }
             }
 
-            pressedKeys += key
-            val cmd = keyToCommand.getValue(key)
+            pressedCmds += cmd
             val action = commandToAction[cmd]
             action?.invoke()
 
-            if (key in repeatableKeys) {
-                val keyRepeat = Thread(object : Runnable {
+            if (cmd in repeatableCmds) {
+                val cmdRepeat = Thread(object : Runnable {
                     override fun run() {
-                        if (key == KeyCode.LEFT || key == KeyCode.RIGHT) {
+                        if (cmd == Command.LEFT || cmd == Command.RIGHT) {
                             if (!delayCompletely(delayAutoShift)) return
                         }
 
-                        while (pressedKeys.contains(key)) {
+                        while (pressedCmds.contains(cmd)) {
                             action?.invoke()
                             if (!delayCompletely(autoRepeatRate)) return
                         }
                     }
                 })
 
-                keyRepeat.isDaemon = true
-                keyRepeatThreads[key] = keyRepeat
-                keyRepeat.start()
+                cmdRepeat.isDaemon = true
+                cmdRepeatThreads[cmd] = cmdRepeat
+                cmdRepeat.start()
             }
         }
     }
 
-    private fun handleKeyRelease(key: KeyCode) {
-        pressedKeys -= key
-        keyRepeatThreads[key]?.interrupt()
-        keyRepeatThreads -= key
+    override fun handleKeyRelease(keyCode: Int) {
+        val cmd = keyToCommand[keyCode]
+        pressedCmds -= cmd
+        cmdRepeatThreads[cmd]?.interrupt()
+        cmdRepeatThreads -= cmd
     }
 
     /**

@@ -2,6 +2,7 @@ package view
 
 import controller.ControllerImpl
 import javafx.application.Platform
+import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
@@ -13,8 +14,8 @@ import javafx.scene.shape.Rectangle
 import javafx.scene.shape.StrokeType
 import javafx.stage.Stage
 import model.board.BOARD_WIDTH
-import model.board.VISIBLE_BOARD_HEIGHT
 import model.board.BoardImpl
+import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell
 import model.cell.CellColor
 import tornadofx.App
@@ -40,7 +41,7 @@ class TetrisApp : App(BoardView::class) {
 }
 
 class BoardView : View("Tetris"), TetrisUI {
-    private val controller: ControllerImpl by inject()
+    private val controller = ControllerImpl() //by inject()
 
     private val boardWidth = BOARD_WIDTH // # cells
     private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells
@@ -96,7 +97,17 @@ class BoardView : View("Tetris"), TetrisUI {
     override fun onDock() {
         // to understand why this handler is set here instead of on the root,
         // see https://stackoverflow.com/questions/52356548/tornadofx-key-press-listener-issues
-        currentStage?.addEventHandler(KeyEvent.ANY, controller)
+        currentStage?.addEventHandler(KeyEvent.ANY, object : EventHandler<KeyEvent> {
+            override fun handle(event: KeyEvent?) {
+                if (event != null) {
+                    when (event.eventType) {
+                        KeyEvent.KEY_PRESSED -> controller.handleKeyPress(event.code.code)
+                        KeyEvent.KEY_RELEASED -> controller.handleKeyRelease(event.code.code)
+                        else -> return
+                    }
+                }
+            }
+        })
         val view = this
         controller.run(BoardImpl(), view)
         super.onDock()
