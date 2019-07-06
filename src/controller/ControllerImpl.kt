@@ -265,25 +265,31 @@ class ControllerImpl : TetrisController {
     private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino) {
         if (!isRunning) return
 
+        var canMoveDown: Boolean
+        var pieceMoved: Boolean
+
         synchronized(activePiece) {
             val candidate = op(activePiece)
             val next = if (candidate.isValid()) candidate else activePiece
-            val cannotMoveDown = !next.moveDown().isValid()
-            val couldNotMovePiece = next == activePiece
-
-            if (cannotMoveDown && couldNotMovePiece) {
-                if (!lockActivePieceThread.isAlive) {
-                    lockActivePieceThread = newLockActivePieceThread()
-                    lockActivePieceThread.start()
-                }
-            } else {
-                lockActivePieceThread.interrupt()
-            }
-
+            canMoveDown = next.moveDown().isValid()
+            pieceMoved = next != activePiece
             activePiece = next
         }
 
-        view.drawCells(allCells())
+        if (pieceMoved) view.drawCells(allCells())
+
+        if (pieceMoved || canMoveDown) {
+            lockActivePieceThread.interrupt()
+        } else {
+            beginLockingActivePiece()
+        }
+    }
+
+    private fun beginLockingActivePiece() {
+        if (lockActivePieceThread.isAlive) return
+
+        lockActivePieceThread = newLockActivePieceThread()
+        lockActivePieceThread.start()
     }
 
     private fun newLockActivePieceThread(delay: Long = lockDelay): Thread = Thread {
