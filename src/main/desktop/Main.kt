@@ -1,4 +1,6 @@
+package main.desktop
+
 import tornadofx.launch
-import view.TetrisApp
+import view.desktop.TetrisApp
 
 fun main() = launch<TetrisApp>()

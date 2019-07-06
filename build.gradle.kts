@@ -1,21 +1,22 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    java
     kotlin("jvm") version "1.3.40"
     id("org.openjfx.javafxplugin") version "0.0.7"
 }
 
-group = "tetris"
+group = "com.github.ndon55555"
 version = "0.0.1"
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("no.tornado:tornadofx:1.7.19")
+    implementation("com.github.kwebio:kweb-core:0.4.24")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.2")

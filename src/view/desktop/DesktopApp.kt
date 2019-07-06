@@ -1,4 +1,4 @@
-package view
+package view.desktop
 
 import controller.ControllerImpl
 import javafx.application.Platform
@@ -31,6 +31,7 @@ import tornadofx.hbox
 import tornadofx.row
 import tornadofx.top
 import tornadofx.vbox
+import view.TetrisUI
 import java.util.Queue
 
 class TetrisApp : App(BoardView::class) {
@@ -41,7 +42,7 @@ class TetrisApp : App(BoardView::class) {
 }
 
 class BoardView : View("Tetris"), TetrisUI {
-    private val controller = ControllerImpl() //by inject()
+    private val controller = ControllerImpl()
 
     private val boardWidth = BOARD_WIDTH // # cells
     private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells
