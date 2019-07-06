@@ -40,7 +40,7 @@ class ControllerImpl : TetrisController {
     lateinit var generator: StandardTetriminoGenerator
     var showGhost = true
     var autoRepeatRate = 30L // Milliseconds between each auto repeat
-    var delayAutoShift = 140L // Milliseconds before activating auto repeat
+    var delayedAutoShift = 140L // Milliseconds before activating auto repeat
     var previewPieces = 5
     var lockDelay = 500L // Milliseconds before locking a piece on the board
     var keyToCommand = mutableMapOf(
@@ -54,11 +54,12 @@ class ControllerImpl : TetrisController {
     ).withDefault { Command.DO_NOTHING }
 
     // Auxiliary state
-    private lateinit var clockTimer: Timer
+    private lateinit var mainLoop: Timer
     private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
     private val pressedCmds = Collections.synchronizedSet(mutableSetOf<Command>())
-    private val repeatableCmds = setOf(Command.SOFT_DROP, Command.LEFT, Command.RIGHT)
+    private val delayedRepeatableCmds = setOf(Command.LEFT, Command.RIGHT)
+    private val repeatableCmds = delayedRepeatableCmds + Command.SOFT_DROP
     private val cmdRepeatThreads = Collections.synchronizedMap(mutableMapOf<Command, Thread>())
     private var lockActivePieceThread = newLockActivePieceThread()
     private var alreadyHolding = false
@@ -109,7 +110,7 @@ class ControllerImpl : TetrisController {
         this.rotationSystem = SuperRotation()
         this.generator = RandomBagOf7()
         this.isRunning = true
-        this.clockTimer = Timer()
+        this.mainLoop = Timer()
         this.pressedCmds.clear()
         this.activePiece = generator.generate()
         this.heldPiece = null
@@ -119,8 +120,11 @@ class ControllerImpl : TetrisController {
         view.drawHeldCells(emptySet())
         view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
-        clockTimer.schedule(0, 1000) {
-            if (Command.SOFT_DROP !in pressedCmds) commandToAction.getValue(Command.SOFT_DROP).invoke()
+        mainLoop.schedule(delay = 0, period = 1000) {
+            if (Command.SOFT_DROP !in pressedCmds) {
+                val softDrop = commandToAction[Command.SOFT_DROP] ?: return@schedule
+                softDrop()
+            }
         }
     }
 
@@ -130,8 +134,27 @@ class ControllerImpl : TetrisController {
         cmdRepeatThreads.clear()
         lockActivePieceThread.interrupt()
         upcomingPiecesQueue.clear()
-        clockTimer.cancel()
+        mainLoop.cancel()
         this.isRunning = false
+    }
+
+    override fun handleKeyPress(keyCode: Int) {
+        val cmd = keyToCommand[keyCode] ?: return
+
+        if (cmd !in pressedCmds) {
+            handleOppositeCommand(cmd)
+            pressedCmds += cmd
+            val action = commandToAction[cmd] ?: return
+            action()
+            if (cmd in repeatableCmds) handleRepeatableCmd(cmd)
+        }
+    }
+
+    override fun handleKeyRelease(keyCode: Int) {
+        val cmd = keyToCommand[keyCode]
+        pressedCmds -= cmd
+        cmdRepeatThreads[cmd]?.interrupt()
+        cmdRepeatThreads -= cmd
     }
 
     private fun StandardTetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
@@ -149,7 +172,11 @@ class ControllerImpl : TetrisController {
     }
 
     private fun StandardTetrimino.clearCompletedLines() {
-        val candidateLines = this.cells().map { it.row }.distinct().sorted()
+        val candidateLines = this.cells()
+                .map { it.row }
+                .distinct()
+                .sorted()
+
         for (line in candidateLines) {
             val cellsInRow = board.getPlacedCells().filter { it.row == line }.size
             if (cellsInRow == BOARD_WIDTH) board.clearLine(line)
@@ -164,8 +191,14 @@ class ControllerImpl : TetrisController {
     private fun StandardTetrimino.ghostCells(): Set<Cell> {
         var t = this
         while (t.moveDown().isValid()) t = t.moveDown()
-        val ghostCells = t.cells().map { CellImpl(CellColor.NULL, it.row, it.col) }.toMutableSet()
-        ghostCells.removeAll { this.cells().any { c -> it.sharesPositionWith(c) } }
+
+        val ghostCells = t.cells()
+                .map { CellImpl(CellColor.NULL, it.row, it.col) }
+                .toMutableSet()
+
+        ghostCells.removeAll { ghostCell ->
+            this.cells().any { activeCell -> ghostCell.sharesPositionWith(activeCell) }
+        }
         return ghostCells
     }
 
@@ -182,6 +215,7 @@ class ControllerImpl : TetrisController {
             is I -> I()
             is T -> T()
         }
+
         if (heldPiece == null) {
             heldPiece = toHold
             newPiece = nextPiece()
@@ -194,49 +228,6 @@ class ControllerImpl : TetrisController {
         view.drawHeldCells(heldPiece!!.cells())
         alreadyHolding = true
         return newPiece
-    }
-
-    override fun handleKeyPress(keyCode: Int) {
-        val cmd = keyToCommand[keyCode] ?: return
-
-        if (cmd !in pressedCmds) {
-            when (cmd) {
-                Command.RIGHT -> pressedCmds -= Command.LEFT
-                Command.LEFT -> pressedCmds -= Command.RIGHT
-                else -> {
-                }
-            }
-
-            pressedCmds += cmd
-            val action = commandToAction[cmd]
-            action?.invoke()
-
-            if (cmd in repeatableCmds) {
-                val cmdRepeat = Thread(object : Runnable {
-                    override fun run() {
-                        if (cmd == Command.LEFT || cmd == Command.RIGHT) {
-                            if (!delayCompletely(delayAutoShift)) return
-                        }
-
-                        while (pressedCmds.contains(cmd)) {
-                            action?.invoke()
-                            if (!delayCompletely(autoRepeatRate)) return
-                        }
-                    }
-                })
-
-                cmdRepeat.isDaemon = true
-                cmdRepeatThreads[cmd] = cmdRepeat
-                cmdRepeat.start()
-            }
-        }
-    }
-
-    override fun handleKeyRelease(keyCode: Int) {
-        val cmd = keyToCommand[keyCode]
-        pressedCmds -= cmd
-        cmdRepeatThreads[cmd]?.interrupt()
-        cmdRepeatThreads -= cmd
     }
 
     /**
@@ -293,7 +284,10 @@ class ControllerImpl : TetrisController {
     }
 
     private fun newLockActivePieceThread(delay: Long = lockDelay): Thread = Thread {
-        if (delayCompletely(delay)) commandToAction.getValue(Command.HARD_DROP).invoke()
+        if (delayCompletely(delay)) {
+            val hardDrop = commandToAction[Command.HARD_DROP] ?: return@Thread
+            hardDrop()
+        }
     }.apply { isDaemon = true }
 
     private fun nextPiece(): StandardTetrimino {
@@ -302,6 +296,39 @@ class ControllerImpl : TetrisController {
         val upcomingCells = upcomingPiecesQueue.map { it.cells() }
         view.drawUpcomingCells(LinkedList(upcomingCells))
         return next
+    }
+
+    private fun handleRepeatableCmd(cmd: Command) {
+        val action = commandToAction[cmd] ?: return
+
+        Thread {
+            if (cmd !in delayedRepeatableCmds || delayCompletely(delayedAutoShift)) {
+                action()
+
+                while (cmd in pressedCmds && delayCompletely(autoRepeatRate)) {
+                    action()
+                }
+            }
+        }.also {
+            it.isDaemon = true
+            cmdRepeatThreads[cmd] = it
+            it.start()
+        }
+    }
+
+    private fun handleOppositeCommand(cmd: Command) {
+        when (cmd) {
+            Command.RIGHT -> {
+                pressedCmds -= Command.LEFT
+                cmdRepeatThreads[Command.LEFT]?.interrupt()
+            }
+            Command.LEFT -> {
+                pressedCmds -= Command.RIGHT
+                cmdRepeatThreads[Command.RIGHT]?.interrupt()
+            }
+            else -> {
+            }
+        }
     }
 }
 
