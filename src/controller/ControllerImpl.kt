@@ -44,13 +44,13 @@ class ControllerImpl : TetrisController {
     var previewPieces = 5
     var lockDelay = 500L // Milliseconds before locking a piece on the board
     var keyToCommand = mutableMapOf(
-            VK_Z to Command.ROTATE_CCW,
-            VK_UP to Command.ROTATE_CW,
-            VK_LEFT to Command.LEFT,
-            VK_RIGHT to Command.RIGHT,
-            VK_DOWN to Command.SOFT_DROP,
-            VK_SPACE to Command.HARD_DROP,
-            VK_SHIFT to Command.HOLD
+        VK_Z to Command.ROTATE_CCW,
+        VK_UP to Command.ROTATE_CW,
+        VK_LEFT to Command.LEFT,
+        VK_RIGHT to Command.RIGHT,
+        VK_DOWN to Command.SOFT_DROP,
+        VK_SPACE to Command.HARD_DROP,
+        VK_SHIFT to Command.HOLD
     ).withDefault { Command.DO_NOTHING }
 
     // Auxiliary state
@@ -66,47 +66,18 @@ class ControllerImpl : TetrisController {
     private var heldPiece: StandardTetrimino? = null
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
     private val commandToAction = mapOf(
-            Command.ROTATE_CCW to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
-            Command.ROTATE_CW to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
-            Command.LEFT to { forActivePiece { t -> t.moveLeft() } },
-            Command.RIGHT to { forActivePiece { t -> t.moveRight() } },
-            Command.SOFT_DROP to { forActivePiece { t -> t.moveDown() } },
-            Command.HARD_DROP to { forActivePiece { t -> t.hardDrop() } },
-            Command.HOLD to { forActivePiece { t -> t.hold() } }
+        Command.ROTATE_CCW to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
+        Command.ROTATE_CW to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
+        Command.LEFT to { forActivePiece { t -> t.moveLeft() } },
+        Command.RIGHT to { forActivePiece { t -> t.moveRight() } },
+        Command.SOFT_DROP to { forActivePiece { t -> t.moveDown() } },
+        Command.HARD_DROP to { forActivePiece { t -> t.hardDrop() } },
+        Command.HOLD to { forActivePiece { t -> t.hold() } }
     )
 
     override fun run(board: Board, view: TetrisUI) {
-        this.board = object : Board {
-            @Synchronized
-            override fun areValidCells(vararg cells: Cell): Boolean = board.areValidCells(*cells)
-
-            @Synchronized
-            override fun placeCells(vararg cells: Cell) = board.placeCells(*cells)
-
-            @Synchronized
-            override fun clearLine(row: Int) = board.clearLine(row)
-
-            @Synchronized
-            override fun getPlacedCells() = board.getPlacedCells()
-        }
-        this.view = object : TetrisUI {
-            val cellsLock = Object()
-            val heldCellsLock = Object()
-            val upcomingCellsLock = Object()
-
-            override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) {
-                view.drawCells(cells
-                        .map { it.move(-FIRST_VISIBLE_ROW, 0) }
-                        .filter { it.row >= 0 }
-                        .toSet())
-            }
-
-            override fun drawHeldCells(cells: Set<Cell>) = synchronized(heldCellsLock) { view.drawHeldCells(cells) }
-
-            override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = synchronized(upcomingCellsLock) {
-                view.drawUpcomingCells(cellsQueue)
-            }
-        }
+        this.board = synchronizedBoard(board)
+        this.view = synchronizedTetrisUI(view)
         this.rotationSystem = SuperRotation()
         this.generator = RandomBagOf7()
         this.isRunning = true
@@ -135,7 +106,7 @@ class ControllerImpl : TetrisController {
         lockActivePieceThread.interrupt()
         upcomingPiecesQueue.clear()
         mainLoop.cancel()
-        this.isRunning = false
+        isRunning = false
     }
 
     override fun handleKeyPress(keyCode: Int) {
@@ -172,10 +143,11 @@ class ControllerImpl : TetrisController {
     }
 
     private fun StandardTetrimino.clearCompletedLines() {
-        val candidateLines = this.cells()
-                .map { it.row }
-                .distinct()
-                .sorted()
+        val candidateLines = this
+            .cells()
+            .map { it.row }
+            .distinct()
+            .sorted()
 
         for (line in candidateLines) {
             val cellsInRow = board.getPlacedCells().filter { it.row == line }.size
@@ -192,9 +164,10 @@ class ControllerImpl : TetrisController {
         var t = this
         while (t.moveDown().isValid()) t = t.moveDown()
 
-        val ghostCells = t.cells()
-                .map { CellImpl(CellColor.NULL, it.row, it.col) }
-                .toMutableSet()
+        val ghostCells = t
+            .cells()
+            .map { CellImpl(CellColor.NULL, it.row, it.col) }
+            .toMutableSet()
 
         ghostCells.removeAll { ghostCell ->
             this.cells().any { activeCell -> ghostCell.sharesPositionWith(activeCell) }
@@ -322,16 +295,56 @@ class ControllerImpl : TetrisController {
                 pressedCmds -= Command.LEFT
                 cmdRepeatThreads[Command.LEFT]?.interrupt()
             }
-            Command.LEFT -> {
+            Command.LEFT  -> {
                 pressedCmds -= Command.RIGHT
                 cmdRepeatThreads[Command.RIGHT]?.interrupt()
             }
-            else -> {
+            else          -> {
             }
         }
     }
 }
 
 enum class Command {
-    ROTATE_CCW, ROTATE_CW, LEFT, RIGHT, SOFT_DROP, HARD_DROP, HOLD, DO_NOTHING
+    ROTATE_CCW,
+    ROTATE_CW,
+    LEFT,
+    RIGHT,
+    SOFT_DROP,
+    HARD_DROP,
+    HOLD,
+    DO_NOTHING
+}
+
+internal fun synchronizedBoard(b: Board): Board = object : Board {
+    @Synchronized
+    override fun areValidCells(vararg cells: Cell): Boolean = b.areValidCells(*cells)
+
+    @Synchronized
+    override fun placeCells(vararg cells: Cell) = b.placeCells(*cells)
+
+    @Synchronized
+    override fun clearLine(row: Int) = b.clearLine(row)
+
+    @Synchronized
+    override fun getPlacedCells() = b.getPlacedCells()
+}
+
+internal fun synchronizedTetrisUI(ui: TetrisUI): TetrisUI = object : TetrisUI {
+    val cellsLock = Object()
+    val heldCellsLock = Object()
+    val upcomingCellsLock = Object()
+
+    override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) {
+        ui.drawCells(cells
+            .map { it.move(-FIRST_VISIBLE_ROW, 0) }
+            .filter { it.row >= 0 }
+            .toSet())
+    }
+
+    override fun drawHeldCells(cells: Set<Cell>) = synchronized(heldCellsLock) { ui.drawHeldCells(cells) }
+
+    override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = synchronized(upcomingCellsLock) {
+        ui.drawUpcomingCells(cellsQueue)
+    }
 }
