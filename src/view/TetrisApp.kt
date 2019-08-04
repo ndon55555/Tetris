@@ -1,6 +1,7 @@
 package view
 
-import controller.ControllerImpl
+import controller.FreePlay
+import controller.config.GameConfiguration
 import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.geometry.Insets
@@ -41,7 +42,7 @@ class TetrisApp : App(BoardView::class) {
 }
 
 class BoardView : View("Tetris"), TetrisUI {
-    private val controller = ControllerImpl() //by inject()
+    private val controller = FreePlay(GameConfiguration())
 
     private val boardWidth = BOARD_WIDTH // # cells
     private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells
@@ -76,7 +77,7 @@ class BoardView : View("Tetris"), TetrisUI {
 
                 center {
                     vbox {
-                        repeat(controller.previewPieces) { add(previewBackground()) }
+                        repeat(controller.gameConfiguration.previewPieces) { add(previewBackground()) }
                     }
                 }
 
@@ -101,9 +102,9 @@ class BoardView : View("Tetris"), TetrisUI {
             override fun handle(event: KeyEvent?) {
                 if (event != null) {
                     when (event.eventType) {
-                        KeyEvent.KEY_PRESSED -> controller.handleKeyPress(event.code.code)
+                        KeyEvent.KEY_PRESSED  -> controller.handleKeyPress(event.code.code)
                         KeyEvent.KEY_RELEASED -> controller.handleKeyRelease(event.code.code)
-                        else -> return
+                        else                  -> return
                     }
                 }
             }
@@ -142,7 +143,6 @@ class BoardView : View("Tetris"), TetrisUI {
         for (cells in cellsQueue) v.add(preview(cells))
         Platform.runLater { rightOfBoard.center = v }
     }
-
 }
 
 const val CELL_SIZE = 30.0 // pixels
@@ -150,28 +150,28 @@ const val PREVIEW_BOX_SIZE = 4 // # of Cells
 const val PREVIEW_SCALE = 0.80 // times original size
 
 internal fun backgroundCell(): Rectangle =
-        Rectangle(CELL_SIZE, CELL_SIZE, Color.BLACK).apply {
-            strokeType = StrokeType.INSIDE
-            stroke = Color(0.8, 0.8, 0.8, 0.2)
-        }
+    Rectangle(CELL_SIZE, CELL_SIZE, Color.BLACK).apply {
+        strokeType = StrokeType.INSIDE
+        stroke = Color(0.8, 0.8, 0.8, 0.2)
+    }
 
 internal fun foregroundCell(c: Cell): Rectangle =
-        Rectangle(CELL_SIZE, CELL_SIZE, getPaint(c.color)).apply {
-            stroke = Color.BLACK
-            strokeType = StrokeType.INSIDE
-            arcWidth = 10.0
-            arcHeight = 10.0
-        }
+    Rectangle(CELL_SIZE, CELL_SIZE, getPaint(c.color)).apply {
+        stroke = Color.BLACK
+        strokeType = StrokeType.INSIDE
+        arcWidth = 10.0
+        arcHeight = 10.0
+    }
 
 internal fun getPaint(c: CellColor): Paint = when (c) {
-    CellColor.GREEN -> Paint.valueOf("green")
-    CellColor.RED -> Paint.valueOf("red")
-    CellColor.DARK_BLUE -> Color(0.12, 0.29, 0.58, 1.0)
-    CellColor.ORANGE -> Paint.valueOf("orange")
+    CellColor.GREEN      -> Paint.valueOf("green")
+    CellColor.RED        -> Paint.valueOf("red")
+    CellColor.DARK_BLUE  -> Color(0.12, 0.29, 0.58, 1.0)
+    CellColor.ORANGE     -> Paint.valueOf("orange")
     CellColor.LIGHT_BLUE -> Paint.valueOf("teal")
-    CellColor.YELLOW -> Paint.valueOf("yellow")
-    CellColor.PURPLE -> Paint.valueOf("purple")
-    CellColor.NULL -> Paint.valueOf("grey")
+    CellColor.YELLOW     -> Paint.valueOf("yellow")
+    CellColor.PURPLE     -> Paint.valueOf("purple")
+    CellColor.NULL       -> Paint.valueOf("grey")
 }
 
 internal fun previewBackground(): GridPane {

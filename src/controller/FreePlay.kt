@@ -1,9 +1,6 @@
 package controller
 
-import controller.config.RandomBagOf7
-import controller.config.RotationSystem
-import controller.config.StandardTetriminoGenerator
-import controller.config.SuperRotation
+import controller.config.GameConfiguration
 import model.board.BOARD_WIDTH
 import model.board.Board
 import model.board.FIRST_VISIBLE_ROW
@@ -19,55 +16,33 @@ import model.tetrimino.StandardTetrimino
 import model.tetrimino.T
 import model.tetrimino.Z
 import view.TetrisUI
-import java.awt.event.KeyEvent.VK_DOWN
-import java.awt.event.KeyEvent.VK_LEFT
-import java.awt.event.KeyEvent.VK_RIGHT
-import java.awt.event.KeyEvent.VK_SHIFT
-import java.awt.event.KeyEvent.VK_SPACE
-import java.awt.event.KeyEvent.VK_UP
-import java.awt.event.KeyEvent.VK_Z
 import java.util.Collections
 import java.util.LinkedList
 import java.util.Queue
 import java.util.Timer
 import kotlin.concurrent.schedule
 
-class ControllerImpl : TetrisController {
+class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     // Game settings
     lateinit var board: Board
     lateinit var view: TetrisUI
-    lateinit var rotationSystem: RotationSystem
-    lateinit var generator: StandardTetriminoGenerator
-    var showGhost = true
-    var autoRepeatRate = 30L // Milliseconds between each auto repeat
-    var delayedAutoShift = 140L // Milliseconds before activating auto repeat
-    var previewPieces = 5
-    var lockDelay = 500L // Milliseconds before locking a piece on the board
-    var keyToCommand = mutableMapOf(
-        VK_Z to Command.ROTATE_CCW,
-        VK_UP to Command.ROTATE_CW,
-        VK_LEFT to Command.LEFT,
-        VK_RIGHT to Command.RIGHT,
-        VK_DOWN to Command.SOFT_DROP,
-        VK_SPACE to Command.HARD_DROP,
-        VK_SHIFT to Command.HOLD
-    ).withDefault { Command.DO_NOTHING }
+    private val config: GameConfiguration // Alias to shorten the name of the property
+        get() = gameConfiguration
 
     // Auxiliary state
     private lateinit var mainLoop: Timer
     private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
     private val pressedCmds = Collections.synchronizedSet(mutableSetOf<Command>())
-    private val delayedRepeatableCmds = setOf(Command.LEFT, Command.RIGHT)
-    private val repeatableCmds = delayedRepeatableCmds + Command.SOFT_DROP
+    private val repeatableCmds = setOf(Command.LEFT, Command.RIGHT, Command.SOFT_DROP)
     private val cmdRepeatThreads = Collections.synchronizedMap(mutableMapOf<Command, Thread>())
     private var lockActivePieceThread = newLockActivePieceThread()
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
     private val commandToAction = mapOf(
-        Command.ROTATE_CCW to { forActivePiece { t -> rotationSystem.rotate90CCW(t, board) } },
-        Command.ROTATE_CW to { forActivePiece { t -> rotationSystem.rotate90CW(t, board) } },
+        Command.ROTATE_CCW to { forActivePiece { t -> config.rotationSystem.rotate90CCW(t, board) } },
+        Command.ROTATE_CW to { forActivePiece { t -> config.rotationSystem.rotate90CW(t, board) } },
         Command.LEFT to { forActivePiece { t -> t.moveLeft() } },
         Command.RIGHT to { forActivePiece { t -> t.moveRight() } },
         Command.SOFT_DROP to { forActivePiece { t -> t.moveDown() } },
@@ -78,14 +53,12 @@ class ControllerImpl : TetrisController {
     override fun run(board: Board, view: TetrisUI) {
         this.board = synchronizedBoard(board)
         this.view = synchronizedTetrisUI(view)
-        this.rotationSystem = SuperRotation()
-        this.generator = RandomBagOf7()
         this.isRunning = true
         this.mainLoop = Timer()
         this.pressedCmds.clear()
-        this.activePiece = generator.generate()
+        this.activePiece = config.generator.generate()
         this.heldPiece = null
-        repeat(previewPieces) { upcomingPiecesQueue.add(generator.generate()) }
+        repeat(config.previewPieces) { upcomingPiecesQueue.add(config.generator.generate()) }
 
         view.drawCells(allCells())
         view.drawHeldCells(emptySet())
@@ -110,7 +83,7 @@ class ControllerImpl : TetrisController {
     }
 
     override fun handleKeyPress(keyCode: Int) {
-        val cmd = keyToCommand[keyCode] ?: return
+        val cmd = config.keyToCommand[keyCode] ?: return
 
         if (cmd !in pressedCmds) {
             handleOppositeCommand(cmd)
@@ -122,7 +95,7 @@ class ControllerImpl : TetrisController {
     }
 
     override fun handleKeyRelease(keyCode: Int) {
-        val cmd = keyToCommand[keyCode]
+        val cmd = config.keyToCommand[keyCode]
         pressedCmds -= cmd
         cmdRepeatThreads[cmd]?.interrupt()
         cmdRepeatThreads -= cmd
@@ -219,7 +192,7 @@ class ControllerImpl : TetrisController {
 
     private fun allCells(): Set<Cell> = board.getPlacedCells().toMutableSet().also {
         it.addAll(activePiece.cells())
-        if (showGhost) it.addAll(activePiece.ghostCells())
+        if (config.showGhost) it.addAll(activePiece.ghostCells())
     }
 
     /**
@@ -256,7 +229,7 @@ class ControllerImpl : TetrisController {
         lockActivePieceThread.start()
     }
 
-    private fun newLockActivePieceThread(delay: Long = lockDelay): Thread = Thread {
+    private fun newLockActivePieceThread(delay: Long = config.lockDelay.toLong()): Thread = Thread {
         if (delayCompletely(delay)) {
             val hardDrop = commandToAction[Command.HARD_DROP] ?: return@Thread
             hardDrop()
@@ -264,7 +237,7 @@ class ControllerImpl : TetrisController {
     }.apply { isDaemon = true }
 
     private fun nextPiece(): StandardTetrimino {
-        upcomingPiecesQueue.add(generator.generate())
+        upcomingPiecesQueue.add(config.generator.generate())
         val next = upcomingPiecesQueue.remove()
         val upcomingCells = upcomingPiecesQueue.map { it.cells() }
         view.drawUpcomingCells(LinkedList(upcomingCells))
@@ -273,12 +246,13 @@ class ControllerImpl : TetrisController {
 
     private fun handleRepeatableCmd(cmd: Command) {
         val action = commandToAction[cmd] ?: return
+        val delayedRepeatableCmds = setOf(Command.LEFT, Command.RIGHT)
 
         Thread {
-            if (cmd !in delayedRepeatableCmds || delayCompletely(delayedAutoShift)) {
+            if (cmd !in delayedRepeatableCmds || delayCompletely(config.delayedAutoShift.toLong())) {
                 action()
 
-                while (cmd in pressedCmds && delayCompletely(autoRepeatRate)) {
+                while (cmd in pressedCmds && delayCompletely(config.autoRepeatRate.toLong())) {
                     action()
                 }
             }
