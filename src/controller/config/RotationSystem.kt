@@ -87,3 +87,9 @@ class SuperRotation : RotationSystem {
         return t
     }
 }
+
+class BasicRotation : RotationSystem {
+    override fun rotate90CW(t: StandardTetrimino, board: Board): StandardTetrimino = t.rotate90CW()
+
+    override fun rotate90CCW(t: StandardTetrimino, board: Board): StandardTetrimino = t.rotate90CCW()
+}

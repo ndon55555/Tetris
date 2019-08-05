@@ -56,6 +56,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         this.isRunning = true
         this.mainLoop = Timer()
         this.pressedCmds.clear()
+        this.config.generator.reset()
         this.activePiece = config.generator.generate()
         this.heldPiece = null
         repeat(config.previewPieces) { upcomingPiecesQueue.add(config.generator.generate()) }
