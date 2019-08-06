@@ -216,14 +216,18 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
         if (pieceMoved) view.drawCells(allCells())
 
-        if (pieceMoved || canMoveDown) {
+        if (canMoveDown) {
             lockActivePieceThread.interrupt()
         } else {
-            beginLockingActivePiece()
+            if (pieceMoved) {
+                lockActivePieceThread.interrupt()
+            }
+
+            beginOrContinueLockingActivePiece()
         }
     }
 
-    private fun beginLockingActivePiece() {
+    private fun beginOrContinueLockingActivePiece() {
         if (lockActivePieceThread.isAlive) return
 
         lockActivePieceThread = newLockActivePieceThread()
