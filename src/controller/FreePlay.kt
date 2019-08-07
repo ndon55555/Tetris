@@ -19,8 +19,10 @@ import view.TetrisUI
 import java.util.Collections
 import java.util.LinkedList
 import java.util.Queue
-import java.util.Timer
-import kotlin.concurrent.schedule
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
@@ -31,7 +33,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         get() = gameConfiguration
 
     // Auxiliary state
-    private lateinit var mainLoop: Timer
+    private val mainLoopExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    private lateinit var mainLoop: ScheduledFuture<*>
     private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
     private val pressedCmds = Collections.synchronizedSet(mutableSetOf<Command>())
@@ -55,7 +58,6 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         this.board = synchronizedBoard(board)
         this.view = synchronizedTetrisUI(view)
         this.isRunning = true
-        this.mainLoop = Timer()
         this.pressedCmds.clear()
         this.config.generator.reset()
         this.activePiece = config.generator.generate()
@@ -66,12 +68,12 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         view.drawHeldCells(emptySet())
         view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
-        mainLoop.schedule(delay = 0, period = 1000) {
+        mainLoop = mainLoopExecutor.scheduleWithFixedDelay(Runnable {
             if (Command.SOFT_DROP !in pressedCmds) {
-                val softDrop = commandToAction[Command.SOFT_DROP] ?: return@schedule
+                val softDrop = commandToAction[Command.SOFT_DROP] ?: return@Runnable
                 softDrop()
             }
-        }
+        }, 0, 1, TimeUnit.SECONDS)
     }
 
     override fun stop() {
@@ -80,7 +82,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         cmdRepeatThreads.clear()
         lockActivePieceThread.interrupt()
         upcomingPiecesQueue.clear()
-        mainLoop.cancel()
+        mainLoop.cancel(true)
         isRunning = false
     }
 
