@@ -21,6 +21,7 @@ import java.util.LinkedList
 import java.util.Queue
 import java.util.Timer
 import kotlin.concurrent.schedule
+import kotlin.concurrent.thread
 
 class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     // Game settings
@@ -234,12 +235,13 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         lockActivePieceThread.start()
     }
 
-    private fun newLockActivePieceThread(delay: Long = config.lockDelay.toLong()): Thread = Thread {
-        if (delayCompletely(delay)) {
-            val hardDrop = commandToAction[Command.HARD_DROP] ?: return@Thread
-            hardDrop()
+    private fun newLockActivePieceThread(delay: Long = config.lockDelay.toLong()): Thread =
+        thread(start = false, isDaemon = false) {
+            if (delayCompletely(delay)) {
+                val hardDrop = commandToAction[Command.HARD_DROP] ?: return@thread
+                hardDrop()
+            }
         }
-    }.apply { isDaemon = true }
 
     private fun nextPiece(): StandardTetrimino {
         upcomingPiecesQueue.add(config.generator.generate())
@@ -253,7 +255,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         val action = commandToAction[cmd] ?: return
         val delayedRepeatableCmds = setOf(Command.LEFT, Command.RIGHT)
 
-        Thread {
+        cmdRepeatThreads[cmd] = thread(start = true, isDaemon = true) {
             if (cmd !in delayedRepeatableCmds || delayCompletely(config.delayedAutoShift.toLong())) {
                 action()
 
@@ -261,10 +263,6 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
                     action()
                 }
             }
-        }.also {
-            it.isDaemon = true
-            cmdRepeatThreads[cmd] = it
-            it.start()
         }
     }
 
