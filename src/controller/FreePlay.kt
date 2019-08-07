@@ -20,10 +20,10 @@ import java.util.Collections
 import java.util.LinkedList
 import java.util.Queue
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 
 class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     // Game settings
@@ -33,14 +33,20 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         get() = gameConfiguration
 
     // Auxiliary state
-    private val mainLoopExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    /*
+    1 thread each for auto dropping, moving left, moving right, soft drop, and locking.
+    1 extra thread as a buffer for when a cancellation does not occur fast enough for any of the above.
+     */
+    private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(6) {
+        Thread { it.run() }.apply { isDaemon = true }
+    }
     private lateinit var mainLoop: ScheduledFuture<*>
     private lateinit var activePiece: StandardTetrimino
     private var isRunning = false
     private val pressedCmds = Collections.synchronizedSet(mutableSetOf<Command>())
     private val repeatableCmds = setOf(Command.LEFT, Command.RIGHT, Command.SOFT_DROP)
-    private val cmdRepeatThreads = Collections.synchronizedMap(mutableMapOf<Command, Thread>())
-    private var lockActivePieceThread = newLockActivePieceThread()
+    private val cmdRepeatFutures = Collections.synchronizedMap(mutableMapOf<Command, Future<*>>())
+    private lateinit var lockActivePieceFuture: Future<*>
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
@@ -68,7 +74,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         view.drawHeldCells(emptySet())
         view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
-        mainLoop = mainLoopExecutor.scheduleWithFixedDelay(Runnable {
+        mainLoop = executor.scheduleWithFixedDelay(Runnable {
             if (Command.SOFT_DROP !in pressedCmds) {
                 val softDrop = commandToAction[Command.SOFT_DROP] ?: return@Runnable
                 softDrop()
@@ -78,9 +84,9 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
     override fun stop() {
         pressedCmds.clear()
-        for (t in cmdRepeatThreads.values) t.interrupt()
-        cmdRepeatThreads.clear()
-        lockActivePieceThread.interrupt()
+        for (t in cmdRepeatFutures.values) t.cancel(true)
+        cmdRepeatFutures.clear()
+        if (::lockActivePieceFuture.isInitialized) lockActivePieceFuture.cancel(true)
         upcomingPiecesQueue.clear()
         mainLoop.cancel(true)
         isRunning = false
@@ -101,8 +107,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     override fun handleKeyRelease(keyCode: Int) {
         val cmd = config.keyToCommand[keyCode]
         pressedCmds -= cmd
-        cmdRepeatThreads[cmd]?.interrupt()
-        cmdRepeatThreads -= cmd
+        cmdRepeatFutures[cmd]?.cancel(true)
+        cmdRepeatFutures -= cmd
     }
 
     private fun StandardTetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
@@ -219,31 +225,34 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
         if (pieceMoved) view.drawCells(allCells())
 
-        if (canMoveDown) {
-            lockActivePieceThread.interrupt()
-        } else {
-            if (pieceMoved) {
-                lockActivePieceThread.interrupt()
-            }
+        if (::lockActivePieceFuture.isInitialized) {
+            if (canMoveDown) {
+                lockActivePieceFuture.cancel(true)
+            } else {
+                if (pieceMoved) {
+                    lockActivePieceFuture.cancel(true)
+                }
 
-            beginOrContinueLockingActivePiece()
+                val running = !lockActivePieceFuture.let { it.isCancelled || it.isDone }
+                if (!running) {
+                    newLockActivePieceFuture()
+                }
+            }
+        } else {
+            if (!canMoveDown && !pieceMoved) {
+                newLockActivePieceFuture()
+            }
         }
     }
 
-    private fun beginOrContinueLockingActivePiece() {
-        if (lockActivePieceThread.isAlive) return
-
-        lockActivePieceThread = newLockActivePieceThread()
-        lockActivePieceThread.start()
-    }
-
-    private fun newLockActivePieceThread(delay: Long = config.lockDelay.toLong()): Thread =
-        thread(start = false, isDaemon = false) {
-            if (delayCompletely(delay)) {
-                val hardDrop = commandToAction[Command.HARD_DROP] ?: return@thread
+    private fun newLockActivePieceFuture() {
+        lockActivePieceFuture = executor.submit {
+            if (delayCompletely(config.lockDelay.toLong())) {
+                val hardDrop = commandToAction[Command.HARD_DROP] ?: return@submit
                 hardDrop()
             }
         }
+    }
 
     private fun nextPiece(): StandardTetrimino {
         upcomingPiecesQueue.add(config.generator.generate())
@@ -257,7 +266,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         val action = commandToAction[cmd] ?: return
         val delayedRepeatableCmds = setOf(Command.LEFT, Command.RIGHT)
 
-        cmdRepeatThreads[cmd] = thread(start = true, isDaemon = true) {
+        cmdRepeatFutures[cmd] = executor.submit {
             if (cmd !in delayedRepeatableCmds || delayCompletely(config.delayedAutoShift.toLong())) {
                 action()
 
@@ -272,11 +281,11 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         when (cmd) {
             Command.RIGHT -> {
                 pressedCmds -= Command.LEFT
-                cmdRepeatThreads[Command.LEFT]?.interrupt()
+                cmdRepeatFutures[Command.LEFT]?.cancel(true)
             }
             Command.LEFT  -> {
                 pressedCmds -= Command.RIGHT
-                cmdRepeatThreads[Command.RIGHT]?.interrupt()
+                cmdRepeatFutures[Command.RIGHT]?.cancel(true)
             }
             else          -> {
             }
