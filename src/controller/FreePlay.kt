@@ -33,9 +33,9 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         get() = gameConfiguration
 
     // Auxiliary state
-    /*
-    1 thread each for auto dropping, moving left, moving right, soft drop, and locking.
-    1 extra thread as a buffer for when a cancellation does not occur fast enough for any of the above.
+    /**
+     * 1 thread each for auto dropping, moving left, moving right, soft drop, and locking.
+     * 1 extra thread as a buffer for when a cancellation does not occur fast enough for any of those events.
      */
     private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(6) {
         Thread { it.run() }.apply { isDaemon = true }
@@ -46,9 +46,9 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     private val pressedCmds = Collections.synchronizedSet(mutableSetOf<Command>())
     private val repeatableCmds = setOf(Command.LEFT, Command.RIGHT, Command.SOFT_DROP)
     private val cmdRepeatFutures = Collections.synchronizedMap(mutableMapOf<Command, Future<*>>())
-    private lateinit var lockActivePieceFuture: Future<*>
+    private var lockActivePieceFuture: Future<*> = finishedFuture()
     private var alreadyHolding = false
-    private var heldPiece: StandardTetrimino? = null
+    private lateinit var heldPiece: StandardTetrimino
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
     private val commandToAction = mapOf(
         Command.ROTATE_CCW to { forActivePiece { t -> config.rotationSystem.rotate90CCW(t, board) } },
@@ -67,7 +67,6 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         this.pressedCmds.clear()
         this.config.generator.reset()
         this.activePiece = config.generator.generate()
-        this.heldPiece = null
         repeat(config.previewPieces) { upcomingPiecesQueue.add(config.generator.generate()) }
 
         view.drawCells(allCells())
@@ -86,7 +85,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         pressedCmds.clear()
         for (t in cmdRepeatFutures.values) t.cancel(true)
         cmdRepeatFutures.clear()
-        if (::lockActivePieceFuture.isInitialized) lockActivePieceFuture.cancel(true)
+        lockActivePieceFuture.cancel(true)
         upcomingPiecesQueue.clear()
         mainLoop.cancel(true)
         isRunning = false
@@ -172,16 +171,16 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
             is T -> T()
         }
 
-        if (heldPiece == null) {
+        if (!::heldPiece.isInitialized) {
             heldPiece = toHold
             newPiece = nextPiece()
         } else {
-            val temp = heldPiece!!
+            val temp = heldPiece
             heldPiece = toHold
             newPiece = temp
         }
 
-        view.drawHeldCells(heldPiece!!.cells())
+        view.drawHeldCells(heldPiece.cells())
         alreadyHolding = true
         return newPiece
     }
@@ -225,21 +224,13 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
         if (pieceMoved) view.drawCells(allCells())
 
-        if (::lockActivePieceFuture.isInitialized) {
-            if (canMoveDown) {
-                lockActivePieceFuture.cancel(true)
-            } else {
-                if (pieceMoved) {
-                    lockActivePieceFuture.cancel(true)
-                }
+        if (canMoveDown || pieceMoved) {
+            lockActivePieceFuture.cancel(true)
+        }
 
-                val running = !lockActivePieceFuture.let { it.isCancelled || it.isDone }
-                if (!running) {
-                    newLockActivePieceFuture()
-                }
-            }
-        } else {
-            if (!canMoveDown && !pieceMoved) {
+        if (!canMoveDown) {
+            val running = !lockActivePieceFuture.let { it.isCancelled || it.isDone }
+            if (!running) {
                 newLockActivePieceFuture()
             }
         }
@@ -293,6 +284,9 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     }
 }
 
+/**
+ * Possible player commands.
+ */
 enum class Command {
     ROTATE_CCW,
     ROTATE_CW,
@@ -304,6 +298,9 @@ enum class Command {
     DO_NOTHING
 }
 
+/**
+ * Obtain a syncrhonized version of the given Board.
+ */
 internal fun synchronizedBoard(b: Board): Board = object : Board {
     @Synchronized
     override fun areValidCells(vararg cells: Cell): Boolean = b.areValidCells(*cells)
@@ -318,6 +315,9 @@ internal fun synchronizedBoard(b: Board): Board = object : Board {
     override fun getPlacedCells() = b.getPlacedCells()
 }
 
+/**
+ * Obtain a synchronized version of the given TetrisUI.
+ */
 internal fun synchronizedTetrisUI(ui: TetrisUI): TetrisUI = object : TetrisUI {
     val cellsLock = Object()
     val heldCellsLock = Object()
@@ -335,4 +335,19 @@ internal fun synchronizedTetrisUI(ui: TetrisUI): TetrisUI = object : TetrisUI {
     override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = synchronized(upcomingCellsLock) {
         ui.drawUpcomingCells(cellsQueue)
     }
+}
+
+/**
+ * No-op future to use as an initial value.
+ */
+internal fun finishedFuture() = object : Future<Unit> {
+    override fun isDone(): Boolean = true
+
+    override fun get() = Unit
+
+    override fun get(timeout: Long, unit: TimeUnit) = Unit
+
+    override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
+
+    override fun isCancelled(): Boolean = false
 }
