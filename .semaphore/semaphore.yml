@@ -21,4 +21,4 @@ blocks:
               docker run
               -v "$(pwd)":/repo
               openjdk:12
-              "cd /repo & ./gradlew test"
+              bash -c "cd /repo && ./gradlew test"
