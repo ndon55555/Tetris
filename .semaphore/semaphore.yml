@@ -9,6 +9,12 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 blocks:
+  - name: Set JVM Version
+    task:
+      jobs:
+        - name: Choose Java 11
+          commands:
+            - sem-version java 11
   - name: Run Tests
     task:
       prologue:
@@ -17,6 +23,4 @@ blocks:
       jobs:
         - name: Gradle Test
           commands:
-            - echo "Switching container JVM to version 11"
-            - sem-version java 11
             - ./gradlew test
