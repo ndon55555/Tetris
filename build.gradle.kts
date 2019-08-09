@@ -37,43 +37,45 @@ configure<JavaPluginConvention> {
 sourceSets["main"].java.srcDirs("src")
 sourceSets["test"].java.srcDirs("test")
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "12"
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform {
-        includeEngines("junit-jupiter")
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "12"
     }
 
-    testLogging {
-        events = setOf(
-            TestLogEvent.FAILED,
-            TestLogEvent.PASSED,
-            TestLogEvent.SKIPPED,
-            TestLogEvent.STANDARD_ERROR,
-            TestLogEvent.STANDARD_OUT
-        )
-        exceptionFormat = TestExceptionFormat.FULL
-    }
-}
+    withType<Test> {
+        useJUnitPlatform {
+            includeEngines("junit-jupiter")
+        }
 
-tasks.register<Jar>("uberJar") {
-    destinationDirectory.set(File("${project.rootDir}/artifacts"))
-
-    manifest {
-        attributes["Main-Class"] = "MainKt"
+        testLogging {
+            events = setOf(
+                TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_ERROR,
+                TestLogEvent.STANDARD_OUT
+            )
+            exceptionFormat = TestExceptionFormat.FULL
+        }
     }
 
-    archiveClassifier.set("uber")
-    from(sourceSets.main.get().output)
-    dependsOn(configurations.runtimeClasspath)
+    register<Jar>("uberJar") {
+        destinationDirectory.set(File("${project.rootDir}/artifacts"))
 
-    from({
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-    })
-}
+        manifest {
+            attributes["Main-Class"] = "MainKt"
+        }
 
-tasks.withType<Wrapper> {
-    gradleVersion = "5.4.1"
+        archiveClassifier.set("uber")
+        from(sourceSets.main.get().output)
+        dependsOn(configurations.runtimeClasspath)
+
+        from({
+            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+        })
+    }
+
+    withType<Wrapper> {
+        gradleVersion = "5.4.1"
+    }
 }
