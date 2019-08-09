@@ -17,6 +17,7 @@ blocks:
       jobs:
         - name: Gradle Test
           commands:
-            - docker run -v $(pwd):/repo openjdk:12 bash
-            - /repo/gradlew test
-            - exit
+            - docker run -v "$(pwd)":/repo openjdk:12 bash
+            - cd /repo
+            - ./gradlew test
+            - exit "$?"
