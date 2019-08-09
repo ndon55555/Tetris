@@ -12,9 +12,9 @@ blocks:
   - name: Set JVM Version
     task:
       jobs:
-        - name: Choose Java 11
+        - name: Choose Java 12
           commands:
-            - sem-version java 11
+            - sem-version java 12
   - name: Run Tests
     task:
       prologue:
