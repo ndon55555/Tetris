@@ -26,12 +26,12 @@ dependencies {
 apply(plugin = "org.openjfx.javafxplugin")
 
 javafx {
-    version = "12"
+    version = "11"
     modules("javafx.controls")
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_12
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 sourceSets["main"].java.srcDirs("src")
