@@ -9,12 +9,6 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 blocks:
-  - name: Set JVM Version
-    task:
-      jobs:
-        - name: Choose Java 12
-          commands:
-            - sem-version java 12
   - name: Run Tests
     task:
       prologue:
