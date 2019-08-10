@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.3.40"
     id("org.openjfx.javafxplugin") version "0.0.7"
+    jacoco
 }
 
 group = "tetris"
@@ -28,6 +29,10 @@ apply(plugin = "org.openjfx.javafxplugin")
 javafx {
     version = "12"
     modules("javafx.controls")
+}
+
+jacoco {
+    toolVersion = "0.8.4"
 }
 
 configure<JavaPluginConvention> {
@@ -77,5 +82,12 @@ tasks {
 
     withType<Wrapper> {
         gradleVersion = "5.4.1"
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.isEnabled = true
+            html.isEnabled = false
+        }
     }
 }
