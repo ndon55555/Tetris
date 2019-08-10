@@ -8,3 +8,5 @@
 * If it's necessary to stop a thread that is currently sleeping, call its `interrupt()` method. Wherever the `Thread.sleep()` inside of that thread is executed must be wrapped in a `try-catch` block that handles `InterruptedException`.
 * To make sure a thread stops when the main program has ended, set it to a daemon thread before execution.
 * Creating threads is expensive for the OS. It's better to reuse threads if possible. Look to interfaces like `ExecutorService` when concurrency is needed.
+
+[![pipeline status](https://gitlab.com/ndon55555/tetris/badges/master/pipeline.svg)](https://gitlab.com/ndon55555/tetris/commits/master)
