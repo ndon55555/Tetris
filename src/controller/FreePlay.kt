@@ -106,9 +106,13 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
     override fun handleKeyRelease(keyCode: Int) {
         val cmd = config.keyToCommand[keyCode]
-        pressedCmds -= cmd
-        cmdRepeatFutures[cmd]?.cancel(true)
-        cmdRepeatFutures -= cmd
+        handleCommandRelease(cmd)
+    }
+
+    private fun handleCommandRelease(c: Command?) {
+        pressedCmds -= c
+        cmdRepeatFutures[c]?.cancel(true)
+        cmdRepeatFutures -= c
     }
 
     private fun StandardTetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
@@ -269,18 +273,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     }
 
     private fun handleOppositeCommand(cmd: Command) {
-        when (cmd) {
-            Command.RIGHT -> {
-                pressedCmds -= Command.LEFT
-                cmdRepeatFutures[Command.LEFT]?.cancel(true)
-            }
-            Command.LEFT  -> {
-                pressedCmds -= Command.RIGHT
-                cmdRepeatFutures[Command.RIGHT]?.cancel(true)
-            }
-            else          -> {
-            }
-        }
+        val opposites = mapOf(Command.RIGHT to Command.LEFT, Command.LEFT to Command.RIGHT)
+        handleCommandRelease(opposites[cmd])
     }
 }
 
