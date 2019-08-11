@@ -3,6 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("com.gradle.build-scan") version "2.4"
     kotlin("jvm") version "1.3.40"
     id("org.openjfx.javafxplugin") version "0.0.7"
     jacoco
@@ -89,5 +90,16 @@ tasks {
             xml.isEnabled = true
             html.isEnabled = false
         }
+
+        dependsOn("test")
     }
+
+    check {
+        dependsOn("jacocoTestReport")
+    }
+}
+
+buildScan {
+    termsOfServiceUrl = "https://gradle.com/terms-of-service"
+    termsOfServiceAgree = "yes"
 }

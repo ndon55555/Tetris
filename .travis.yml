@@ -21,7 +21,7 @@ script:
   - >
     docker run
     -v "$(pwd)":/repo openjdk:12
-    bash -c "cd /repo && ./gradlew test --stacktrace && ./gradlew jacocoTestReport"
+    bash -c "cd /repo && ./gradlew build --scan --stack-trace"
   - ./cc-test-reporter format-coverage build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco
   - ./cc-test-reporter upload-coverage
 
