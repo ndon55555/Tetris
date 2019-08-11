@@ -87,6 +87,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         cmdRepeatFutures.clear()
         lockActivePieceFuture.cancel(true)
         heldPiece = null
+        alreadyHolding = false
         upcomingPiecesQueue.clear()
         mainLoop.cancel(true)
         isRunning = false
