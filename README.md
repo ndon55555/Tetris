@@ -1,4 +1,7 @@
 # Tetris
+[![Build Status](https://travis-ci.org/ndon55555/Tetris.svg?branch=master)](https://travis-ci.org/ndon55555/Tetris)
+[![Maintainability](https://api.codeclimate.com/v1/badges/facb6670bb0b5d530150/maintainability)](https://codeclimate.com/github/ndon55555/Tetris/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/facb6670bb0b5d530150/test_coverage)](https://codeclimate.com/github/ndon55555/Tetris/test_coverage)
 
 ### Things I learned during this project:
 * Iterating over a parallel stream of a synchronized collection is not automatically thread-safe.
