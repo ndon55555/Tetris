@@ -48,7 +48,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     private val cmdRepeatFutures = Collections.synchronizedMap(mutableMapOf<Command, Future<*>>())
     private var lockActivePieceFuture: Future<*> = finishedFuture()
     private var alreadyHolding = false
-    private lateinit var heldPiece: StandardTetrimino
+    private var heldPiece: StandardTetrimino? = null
     private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
     private val commandToAction = mapOf(
         Command.ROTATE_CCW to { forActivePiece { t -> config.rotationSystem.rotate90CCW(t, board) } },
@@ -86,6 +86,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         for (t in cmdRepeatFutures.values) t.cancel(true)
         cmdRepeatFutures.clear()
         lockActivePieceFuture.cancel(true)
+        heldPiece = null
         upcomingPiecesQueue.clear()
         mainLoop.cancel(true)
         isRunning = false
@@ -171,16 +172,15 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
             is T -> T()
         }
 
-        if (!::heldPiece.isInitialized) {
+        if (heldPiece == null) {
             heldPiece = toHold
             newPiece = nextPiece()
         } else {
-            val temp = heldPiece
+            newPiece = heldPiece!!
             heldPiece = toHold
-            newPiece = temp
         }
 
-        view.drawHeldCells(heldPiece.cells())
+        view.drawHeldCells(heldPiece!!.cells())
         alreadyHolding = true
         return newPiece
     }
