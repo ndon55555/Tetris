@@ -70,7 +70,7 @@ class SuperRotation : RotationSystem {
         val testDeltas: List<Pair<Int, Int>> = data.getValue(t.orientation()).getValue(targetOrientation)
         for ((dCol, dRow) in testDeltas) {
             var candidate = rotated
-            candidate = candidate.move(dRow, dCol)
+            candidate = candidate.move(dCol, dRow)
 
             if (board.areValidCells(*candidate.cells().toTypedArray())) return candidate
         }
