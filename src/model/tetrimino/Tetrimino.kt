@@ -10,6 +10,13 @@ import java.util.Objects
 
 interface Tetrimino {
     /**
+     * @param dRow Number of rows to move up. Negative means down.
+     * @param dCol Number of columns to move right. Negative means left.
+     * @return This Tetrimino translated dCol columns and dRow rows.
+     */
+    fun move(dRow: Int, dCol: Int): Tetrimino
+
+    /**
      * @return This Tetrimino translated one row towards the top of the board.
      */
     fun moveUp(): Tetrimino
@@ -62,6 +69,8 @@ enum class Orientation {
  */
 sealed class StandardTetrimino(private val t: Tetrimino) : Tetrimino {
     protected abstract fun newPiece(t: Tetrimino): StandardTetrimino
+
+    override fun move(dRow: Int, dCol: Int): StandardTetrimino = newPiece(t.move(dRow, dCol))
 
     override fun moveUp(): StandardTetrimino = newPiece(t.moveUp())
 

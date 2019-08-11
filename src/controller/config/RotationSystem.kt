@@ -4,7 +4,6 @@ import model.board.Board
 import model.tetrimino.I
 import model.tetrimino.Orientation
 import model.tetrimino.StandardTetrimino
-import kotlin.math.abs
 
 interface RotationSystem {
     fun rotate90CW(t: StandardTetrimino, board: Board): StandardTetrimino
@@ -70,35 +69,12 @@ class SuperRotation : RotationSystem {
         val testDeltas: List<Pair<Int, Int>> = data.getValue(t.orientation()).getValue(targetOrientation)
         for ((dCol, dRow) in testDeltas) {
             var candidate = rotated
-            candidate = candidate.move(dCol, dRow)
+            candidate = candidate.move(dRow, dCol)
 
             if (board.areValidCells(*candidate.cells().toTypedArray())) return candidate
         }
 
         return t
-    }
-
-    // Positive dCol means move right. Positive dRow means move up.
-    private fun StandardTetrimino.move(dCol: Int, dRow: Int): StandardTetrimino {
-        var result = this
-        val moveVector =
-            fun(
-                vector: Int,
-                negativeVectorAction: StandardTetrimino.() -> StandardTetrimino,
-                positiveVectorAction: StandardTetrimino.() -> StandardTetrimino
-            ) {
-                val reps = abs(vector)
-                val action = if (vector < 0) negativeVectorAction else positiveVectorAction
-
-                repeat(reps) {
-                    result = result.action()
-                }
-            }
-
-        moveVector(dCol, StandardTetrimino::moveLeft, StandardTetrimino::moveRight)
-        moveVector(dRow, StandardTetrimino::moveDown, StandardTetrimino::moveUp)
-
-        return result
     }
 }
 
