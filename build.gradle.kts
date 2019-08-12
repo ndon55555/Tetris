@@ -6,6 +6,7 @@ plugins {
     id("com.gradle.build-scan") version "2.4"
     kotlin("jvm") version "1.3.40"
     id("org.openjfx.javafxplugin") version "0.0.7"
+    id("com.dorongold.task-tree") version "1.4"
     jacoco
 }
 
