@@ -29,6 +29,7 @@ script:
   - ./cc-test-reporter upload-coverage
 
 before_cache:
+  - sudo chown -R $USER:$USER $HOME/.gradle
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
