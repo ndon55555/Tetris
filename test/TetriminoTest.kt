@@ -1,58 +1,112 @@
 import model.cell.CellColor
 import model.cell.CellImpl
+import model.cell.Posn
 import model.tetrimino.I
 import model.tetrimino.J
+import model.tetrimino.L
 import model.tetrimino.O
-import model.cell.Posn
 import model.tetrimino.Orientation
 import model.tetrimino.S
 import model.tetrimino.T
+import model.tetrimino.Tetrimino
 import model.tetrimino.TetriminoImpl
+import model.tetrimino.Z
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class TetriminoTest {
-    private val tetriS = S()
-    private val tetriJ = J()
-    private val tetriI = I()
-    private val tetriO = O()
-    private val tetriT = T()
+open class TetriminoTest {
+    private val allStandardPieces = setOf(S(), Z(), J(), L(), I(), O(), T())
+    private val prettyName = mapOf<Any, String>(
+        S::class to "S",
+        Z::class to "Z",
+        J::class to "J",
+        L::class to "L",
+        I::class to "I",
+        O::class to "O",
+        T::class to "T",
+        Tetrimino::moveDown to "Down",
+        Tetrimino::moveUp to "Up",
+        Tetrimino::moveLeft to "Left",
+        Tetrimino::moveRight to "Right",
+        Tetrimino::rotate90CW to "90 degrees CW",
+        Tetrimino::rotate90CCW to "90 degrees CCW"
+    )
 
-    @Test
-    fun identityMovementTest() {
-        assertEquals(tetriS, tetriS.moveLeft().moveRight())
-        assertEquals(tetriS, tetriS.moveRight().moveLeft())
-        assertEquals(tetriS, tetriS.rotate90CCW().rotate90CW())
-        assertEquals(tetriS, tetriS.rotate90CW().rotate90CCW())
+    @TestFactory
+    fun oppositeMovementTest(): List<DynamicTest> {
+        val opposites = setOf(
+            Pair(Tetrimino::moveDown, Tetrimino::moveUp),
+            Pair(Tetrimino::moveLeft, Tetrimino::moveRight),
+            Pair(Tetrimino::rotate90CW, Tetrimino::rotate90CCW)
+        )
 
-        assertEquals(tetriJ, tetriJ.moveLeft().moveRight())
-        assertEquals(tetriJ, tetriJ.moveRight().moveLeft())
-        assertEquals(tetriJ, tetriJ.rotate90CCW().rotate90CW())
-        assertEquals(tetriJ, tetriJ.rotate90CW().rotate90CCW())
+        val testTemplate =
+            fun(p: Tetrimino, f1: Tetrimino.() -> Tetrimino, f2: Tetrimino.() -> Tetrimino): DynamicTest =
+                dynamicTest(String.format("%s: %s then %s", prettyName[p::class], prettyName[f1], prettyName[f2])) {
+                    assertEquals(p, f2(f1(p)))
+                }
 
-        assertEquals(tetriI, tetriI.moveLeft().moveRight())
-        assertEquals(tetriI, tetriI.moveRight().moveLeft())
-        assertEquals(tetriI, tetriI.rotate90CCW().rotate90CW())
-        assertEquals(tetriI, tetriI.rotate90CW().rotate90CCW())
+        return allStandardPieces.fold(mutableListOf()) { tests, piece ->
+            opposites.forEach { (f1, f2) ->
+                tests += testTemplate(piece, f1, f2)
+                tests += testTemplate(piece, f2, f1)
+            }
 
-        assertEquals(tetriO, tetriO.moveLeft().moveRight())
-        assertEquals(tetriO, tetriO.moveRight().moveLeft())
-        assertEquals(tetriO, tetriO.rotate90CCW().rotate90CW())
-        assertEquals(tetriO, tetriO.rotate90CW().rotate90CCW())
-
-        assertEquals(tetriT, tetriT.moveLeft().moveRight())
-        assertEquals(tetriT, tetriT.moveRight().moveLeft())
-        assertEquals(tetriT, tetriT.rotate90CCW().rotate90CW())
-        assertEquals(tetriT, tetriT.rotate90CW().rotate90CCW())
+            tests
+        }
     }
 
-    @Test
-    fun equivalentMovementTest() {
-        assertEquals(tetriT.rotate90CCW(), tetriT.rotate90CW().rotate90CW().rotate90CW())
-        assertEquals(tetriT.moveDown().moveLeft().moveLeft(), tetriT.moveLeft().moveDown().moveLeft())
+    @TestFactory
+    fun equivalentMovementTest(): List<DynamicTest> {
+        val testTemplate = fun(p: Tetrimino): Pair<DynamicTest, DynamicTest> = Pair(
+            dynamicTest(String.format("Rotate %s: 90 CCW = 90CW * 3", prettyName[p::class])) {
+                assertEquals(p.rotate90CCW(), p.rotate90CW().rotate90CW().rotate90CW())
+            },
+            dynamicTest(String.format("Rotate %s: Down, Left, Left = Left, Down Left", prettyName[p::class])) {
+                assertEquals(p.moveDown().moveLeft().moveLeft(), p.moveLeft().moveDown().moveLeft())
+            }
+        )
+
+        return allStandardPieces.fold(mutableListOf()) { tests, piece ->
+            tests.addAll(testTemplate(piece).toList())
+            tests
+        }
+    }
+
+    @TestFactory
+    fun orientationTest(): List<DynamicTest> {
+        val descriptionExpectedActual = setOf(
+            Triple("Default orientation", Orientation.UP, { p: Tetrimino -> p.orientation() }),
+            Triple("Rotate 90 CW orientation", Orientation.RIGHT, { p: Tetrimino -> p.rotate90CW().orientation() }),
+            Triple("Rotate 90 CCW orientation", Orientation.LEFT, { p: Tetrimino -> p.rotate90CCW().orientation() }),
+            Triple(
+                "Rotate 90 CW * 2 orientation",
+                Orientation.DOWN,
+                { p: Tetrimino -> p.rotate90CW().rotate90CW().orientation() }),
+            Triple(
+                "Rotate 90 CCW * 2 orientation",
+                Orientation.DOWN,
+                { p: Tetrimino -> p.rotate90CCW().rotate90CCW().orientation() })
+        )
+
+        return allStandardPieces.fold(mutableListOf()) { tests, piece ->
+            for ((description, expected, actual) in descriptionExpectedActual) {
+                tests += dynamicTest(String.format("%s: %s", prettyName[piece::class], description)) {
+                    assertEquals(
+                        expected,
+                        actual(piece)
+                    )
+                }
+            }
+
+            tests
+        }
     }
 
     @Test
@@ -66,31 +120,24 @@ class TetriminoTest {
     fun nonAdjacentCellsTest() {
         expectException(IllegalArgumentException::class, "should be adjacent with at least 1 other cell") {
             TetriminoImpl(
-                    Posn(5, 5),
-                    setOf(
-                            CellImpl(CellColor.DARK_BLUE, 1, 1),
-                            CellImpl(CellColor.DARK_BLUE, 1, 2),
-                            CellImpl(CellColor.DARK_BLUE, 2, 2),
-                            CellImpl(CellColor.DARK_BLUE, 3, 3)
-                    ),
-                    Orientation.UP
+                Posn(5, 5),
+                setOf(
+                    CellImpl(CellColor.DARK_BLUE, 1, 1),
+                    CellImpl(CellColor.DARK_BLUE, 1, 2),
+                    CellImpl(CellColor.DARK_BLUE, 2, 2),
+                    CellImpl(CellColor.DARK_BLUE, 3, 3)
+                ),
+                Orientation.UP
             )
         }
-    }
-
-    @Test
-    fun orientationTest() {
-        assertEquals(Orientation.UP, tetriT.orientation())
-        assertEquals(Orientation.RIGHT, tetriT.rotate90CW().orientation())
-        assertEquals(Orientation.LEFT, tetriT.rotate90CCW().orientation())
-        assertEquals(Orientation.DOWN, tetriT.rotate90CW().rotate90CW().orientation())
-        assertEquals(Orientation.DOWN, tetriT.rotate90CCW().rotate90CCW().orientation())
     }
 
     private fun <T : Throwable> expectException(exceptionClass: KClass<T>, substring: String, block: () -> Unit) {
         val ex = assertFailsWith(exceptionClass) { block() }
 
-        assertTrue(ex.message?.contains(substring) ?: false,
-                String.format("Exception message does not contain: %s", substring))
+        assertTrue(
+            ex.message?.contains(substring) ?: false,
+            String.format("Exception message does not contain: %s", substring)
+        )
     }
 }
