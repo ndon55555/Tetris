@@ -45,7 +45,7 @@ open class TetriminoImpl(
         orientation
     )
 
-    override fun moveUp(): Tetrimino = move(1, 0)
+    override fun moveUp(): TetriminoImpl = move(1, 0)
 
     override fun moveDown(): TetriminoImpl = move(-1, 0)
 
@@ -53,27 +53,24 @@ open class TetriminoImpl(
 
     override fun moveRight(): TetriminoImpl = move(0, 1)
 
-    override fun rotate90CW(): TetriminoImpl =
-        TetriminoImpl(
-            centerOfRotation,
-            blocks.map { it.rotate90CWAround(centerOfRotation) }.toSet(),
-            when (orientation) {
-                Orientation.UP    -> Orientation.RIGHT
-                Orientation.DOWN  -> Orientation.LEFT
-                Orientation.LEFT  -> Orientation.UP
-                Orientation.RIGHT -> Orientation.DOWN
-            }
-        )
+    override fun rotate90CW(): TetriminoImpl = rotateHelper(Cell::rotate90CWAround, 1)
 
-    override fun rotate90CCW(): TetriminoImpl =
+    override fun rotate90CCW(): TetriminoImpl = rotateHelper(Cell::rotate90CCWAround, -1)
+
+    private fun rotateHelper(cellFunc: Cell.(Posn) -> Cell, dOrientationIdx: Int) =
         TetriminoImpl(
             centerOfRotation,
-            blocks.map { it.rotate90CCWAround(centerOfRotation) }.toSet(),
-            when (orientation) {
-                Orientation.UP    -> Orientation.LEFT
-                Orientation.DOWN  -> Orientation.RIGHT
-                Orientation.LEFT  -> Orientation.DOWN
-                Orientation.RIGHT -> Orientation.UP
+            blocks.map { it.cellFunc(centerOfRotation) }.toSet(),
+            orientationWheel.indexOf(orientation).let { curIdx ->
+                val r = curIdx + dOrientationIdx
+                val n = orientationWheel.size
+                val newIdx = when {
+                    r < 0 -> n + r
+                    r >= n -> n - r
+                    else -> r
+                }
+
+                orientationWheel[newIdx]
             }
         )
 
@@ -86,4 +83,6 @@ open class TetriminoImpl(
 
     override fun hashCode(): Int = Objects.hash(this.cells())
 }
+
+private val orientationWheel = listOf(Orientation.UP, Orientation.RIGHT, Orientation.DOWN, Orientation.LEFT)
 
