@@ -4,6 +4,7 @@ import controller.config.GameConfiguration
 import model.board.BOARD_WIDTH
 import model.board.Board
 import model.board.FIRST_VISIBLE_ROW
+import model.board.synchronizedBoard
 import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
@@ -16,6 +17,7 @@ import model.tetrimino.StandardTetrimino
 import model.tetrimino.T
 import model.tetrimino.Z
 import view.TetrisUI
+import view.synchronizedTetrisUI
 import java.util.Collections
 import java.util.LinkedList
 import java.util.Queue
@@ -69,7 +71,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         this.activePiece = config.generator.generate()
         repeat(config.previewPieces) { upcomingPiecesQueue.add(config.generator.generate()) }
 
-        view.drawCells(allCells())
+        view.drawCells(emptySet())
         view.drawHeldCells(emptySet())
         view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
 
@@ -227,7 +229,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
             activePiece = next
         }
 
-        if (pieceMoved) view.drawCells(allCells())
+        if (pieceMoved) view.drawCells(allCells().standardize())
 
         if (canMoveDown || pieceMoved) {
             lockActivePieceFuture.cancel(true)
@@ -240,6 +242,12 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
             }
         }
     }
+
+    // Changes the cells in such a way that they can be rendered properly
+    private fun Set<Cell>.standardize(): Set<Cell> =
+        this.map { it.move(-FIRST_VISIBLE_ROW, 0) }
+            .filter { it.row >= 0 }
+            .toSet()
 
     private fun newLockActivePieceFuture() {
         lockActivePieceFuture = executor.submit {
@@ -291,45 +299,6 @@ enum class Command {
     HARD_DROP,
     HOLD,
     DO_NOTHING
-}
-
-/**
- * Obtain a syncrhonized version of the given Board.
- */
-internal fun synchronizedBoard(b: Board): Board = object : Board {
-    @Synchronized
-    override fun areValidCells(vararg cells: Cell): Boolean = b.areValidCells(*cells)
-
-    @Synchronized
-    override fun placeCells(vararg cells: Cell) = b.placeCells(*cells)
-
-    @Synchronized
-    override fun clearLine(row: Int) = b.clearLine(row)
-
-    @Synchronized
-    override fun getPlacedCells() = b.getPlacedCells()
-}
-
-/**
- * Obtain a synchronized version of the given TetrisUI.
- */
-internal fun synchronizedTetrisUI(ui: TetrisUI): TetrisUI = object : TetrisUI {
-    val cellsLock = Object()
-    val heldCellsLock = Object()
-    val upcomingCellsLock = Object()
-
-    override fun drawCells(cells: Set<Cell>) = synchronized(cellsLock) {
-        ui.drawCells(cells
-            .map { it.move(-FIRST_VISIBLE_ROW, 0) }
-            .filter { it.row >= 0 }
-            .toSet())
-    }
-
-    override fun drawHeldCells(cells: Set<Cell>) = synchronized(heldCellsLock) { ui.drawHeldCells(cells) }
-
-    override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = synchronized(upcomingCellsLock) {
-        ui.drawUpcomingCells(cellsQueue)
-    }
 }
 
 /**
