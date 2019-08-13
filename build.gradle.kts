@@ -57,7 +57,6 @@ tasks {
         testLogging {
             events = setOf(
                 TestLogEvent.FAILED,
-                TestLogEvent.PASSED,
                 TestLogEvent.SKIPPED,
                 TestLogEvent.STANDARD_ERROR,
                 TestLogEvent.STANDARD_OUT
