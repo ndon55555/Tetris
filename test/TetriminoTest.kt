@@ -15,9 +15,11 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 open class TetriminoTest {
@@ -107,6 +109,68 @@ open class TetriminoTest {
 
             tests
         }
+    }
+
+    @TestFactory
+    fun identityMoveTest(): List<DynamicTest> = allStandardPieces.map { piece ->
+        val x = Random.Default.nextInt()
+        val y = Random.Default.nextInt()
+
+        dynamicTest(String.format("%s move (%d, %d) then (%d, %d)", prettyName[piece::class], x, y, -x, -y)) {
+            assertEquals(piece, piece.move(x, y).move(-x, -y))
+        }
+    }
+
+    @TestFactory
+    fun cellsTest(): List<DynamicTest> = allStandardPieces.map { piece ->
+        dynamicTest(String.format("%s cells", prettyName[piece::class])) {
+            assertEquals(4, piece.cells().size)
+        }
+    }
+
+    @TestFactory
+    fun equalsAndHashCodeTest(): List<DynamicTest> {
+        val n = Random.Default.nextInt(10, 20)
+        val seed = Random.Default.nextInt()
+        println(String.format("Randomly generating `equals` and `hashCode` tests using seed %d", seed))
+        val rand = Random(seed)
+        val tests = mutableListOf<DynamicTest>()
+
+        repeat(n) {
+            val a = allStandardPieces.random(rand)
+            val b = allStandardPieces.random(rand)
+            val c = allStandardPieces.random(rand)
+
+            tests += dynamicTest(String.format("Reflexivity of %s", prettyName[a::class])) {
+                assertEquals(a, a)
+                assertEquals(a.hashCode(), a.hashCode())
+            }
+
+            if (a == b) {
+                tests += dynamicTest(String.format("Symmetry of %s", prettyName[a::class])) {
+                    assertEquals(b, a)
+                }
+            }
+
+            if (a == b || b == c) {
+                tests += dynamicTest(
+                    String.format(
+                        "Transitivity of %s, %s, %s",
+                        prettyName[a::class],
+                        prettyName[b::class],
+                        prettyName[c::class]
+                    )
+                ) {
+                    when {
+                        a == b && b == c -> assertEquals(a, c)
+                        a != b && b == c -> assertNotEquals(a, c)
+                        a == b && b != c -> assertNotEquals(a, c)
+                    }
+                }
+            }
+        }
+
+        return tests
     }
 
     @Test
