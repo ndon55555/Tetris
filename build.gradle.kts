@@ -8,6 +8,7 @@ plugins {
     id("org.openjfx.javafxplugin") version "0.0.7"
     id("com.dorongold.task-tree") version "1.4"
     jacoco
+    application
 }
 
 group = "tetris"
@@ -97,6 +98,10 @@ tasks {
     check {
         dependsOn("jacocoTestReport")
     }
+}
+
+application {
+    mainClassName = "MainKt"
 }
 
 buildScan {
