@@ -32,7 +32,7 @@ class RandomBagOf7 : StandardTetriminoGenerator {
 }
 
 class PurelyRandom : StandardTetriminoGenerator {
-    override fun generate(): StandardTetrimino = allStandardPieces.shuffled().first()
+    override fun generate(): StandardTetrimino = allStandardPieces.random()
 
     override fun reset() = Unit
 }
