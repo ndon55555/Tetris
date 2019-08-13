@@ -1,5 +1,6 @@
 import model.board.Board
 import model.board.BoardImpl
+import model.board.synchronizedBoard
 import model.cell.CellColor
 import model.cell.CellImpl
 import org.junit.jupiter.api.BeforeEach
@@ -9,12 +10,13 @@ import kotlin.test.assertFails
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class BoardTest {
+abstract class AbstractBoardTest {
     private lateinit var board: Board
+    protected abstract fun boardImplementation(): Board
 
     @BeforeEach
     fun init() {
-        board = BoardImpl()
+        board = boardImplementation()
     }
 
     @Test
@@ -81,4 +83,12 @@ class BoardTest {
                 CellImpl(CellColor.RED, 0, 2).move(1, 0)
         ))
     }
+}
+
+class BoardImplTest(): AbstractBoardTest() {
+    override fun boardImplementation(): Board = BoardImpl()
+}
+
+class SynchronizedBoardTest(): AbstractBoardTest() {
+    override fun boardImplementation(): Board = synchronizedBoard(BoardImpl())
 }
