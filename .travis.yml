@@ -32,6 +32,8 @@ before_cache:
   - sudo chown -R $USER:$USER $HOME/.gradle
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - ls -l $HOME/.gradle/caches | grep -o -P "\d+\.\d+\.\d+\S*$" | xargs rm -rf
+  - find $HOME/.gradle/caches -name "*.lock" | xargs rm -f
 
 cache:
   directories:
