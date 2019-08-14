@@ -1,3 +1,5 @@
+package model
+
 import model.cell.CellColor
 import model.cell.CellImpl
 import model.cell.Posn

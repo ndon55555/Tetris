@@ -1,3 +1,5 @@
+package model
+
 import model.cell.Cell
 import model.cell.CellColor.GREEN
 import model.cell.CellColor.PURPLE

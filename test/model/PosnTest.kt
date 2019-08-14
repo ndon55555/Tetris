@@ -1,3 +1,5 @@
+package model
+
 import model.cell.Posn
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

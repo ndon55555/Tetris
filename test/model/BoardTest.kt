@@ -1,3 +1,5 @@
+package model
+
 import model.board.Board
 import model.board.BoardImpl
 import model.board.synchronizedBoard
