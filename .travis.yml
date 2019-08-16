@@ -33,7 +33,7 @@ before_cache:
   - rm -f  $GRADLE_HOME/caches/modules-2/modules-2.lock
   - rm -fr $GRADLE_HOME/caches/*/plugin-resolution/
   - ls -l $GRADLE_HOME/caches/ | grep -o -P "\d+\.\d+\.\d+\S*$" | xargs -I {} rm -rf $GRADLE_HOME/caches/{}
-  - find $GRADLE_HOME/caches/ -name "*.lock" | xargs -I {} rm -f $GRADLE_HOME/caches/{}
+  - find $GRADLE_HOME/ -name "*.lock" | xargs -I {} rm -f $GRADLE_HOME/caches/{}
 
 cache:
   directories:
