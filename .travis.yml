@@ -1,5 +1,5 @@
 dist: bionic
-language: java
+language: minimal
 
 services:
   - docker
