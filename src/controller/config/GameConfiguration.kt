@@ -4,6 +4,7 @@ import controller.Command
 import java.awt.event.KeyEvent
 
 class GameConfiguration {
+    // All time values are in milliseconds
     var showGhost: Boolean = true
     var autoRepeatRate: Int = 30
         set(value) {
@@ -18,6 +19,15 @@ class GameConfiguration {
         set(value) {
             if (value < 0) {
                 throw IllegalArgumentException("Delayed auto shift must be nonnegative")
+            }
+
+            field = value
+        }
+
+    var autoDropDelay: Int = 1000
+        set(value) {
+            if (value <= 0) {
+                throw IllegalArgumentException("Auto drop delay must be positive")
             }
 
             field = value

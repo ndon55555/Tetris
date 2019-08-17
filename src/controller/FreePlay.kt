@@ -23,8 +23,10 @@ import java.util.LinkedList
 import java.util.Queue
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.TimeUnit
 
 class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
@@ -51,7 +53,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     private var lockActivePieceFuture: Future<*> = finishedFuture()
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
-    private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedList()
+    private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedBlockingQueue()
     private val commandToAction = mapOf(
         Command.ROTATE_CCW to { forActivePiece { t -> config.rotationSystem.rotate90CCW(t, board) } },
         Command.ROTATE_CW to { forActivePiece { t -> config.rotationSystem.rotate90CW(t, board) } },
@@ -80,7 +82,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
                 val softDrop = commandToAction[Command.SOFT_DROP] ?: return@Runnable
                 softDrop()
             }
-        }, 0, 1, TimeUnit.SECONDS)
+        }, 0, config.autoDropDelay.toLong(), TimeUnit.MILLISECONDS)
     }
 
     override fun stop() {
