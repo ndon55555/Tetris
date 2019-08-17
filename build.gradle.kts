@@ -16,11 +16,12 @@ version = "0.0.1"
 
 repositories {
     mavenCentral()
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("no.tornado:tornadofx:1.7.19")
+    implementation("no.tornado:tornadofx:2.0.0-SNAPSHOT")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
