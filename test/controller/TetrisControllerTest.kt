@@ -79,10 +79,10 @@ class FreePlayTest : AbstractTetrisControllerTest() {
     @Test
     override fun stopTest() {
         val sb = SpyBoard()
-        val sUI = SpyUI()
-        controller.run(sb, sUI)
+        controller.run(sb, SpyUI())
+        val initCellsPlacements = sb.cellsPlacements
         assertDoesNotThrow { controller.stop() }
-        assertEquals(0, sb.cellsPlacements)
+        assertEquals(initCellsPlacements, sb.cellsPlacements)
     }
 
     @Test
