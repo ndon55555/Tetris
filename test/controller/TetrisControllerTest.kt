@@ -10,7 +10,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import view.TetrisUI
 import java.awt.event.KeyEvent
 import java.util.Queue
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 abstract class AbstractTetrisControllerTest {
@@ -62,7 +61,6 @@ class FreePlayTest : AbstractTetrisControllerTest() {
     private lateinit var controller: TetrisController
     private val testControllerConfig = GameConfiguration().apply {
         autoDropDelay = Integer.MAX_VALUE
-        showGhost = false
         lockDelay = 0
     }
 
@@ -78,11 +76,8 @@ class FreePlayTest : AbstractTetrisControllerTest() {
 
     @Test
     override fun stopTest() {
-        val sb = SpyBoard()
-        controller.run(sb, SpyUI())
-        val initCellsPlacements = sb.cellsPlacements
+        controller.run(SpyBoard(), SpyUI())
         assertDoesNotThrow { controller.stop() }
-        assertEquals(initCellsPlacements, sb.cellsPlacements)
     }
 
     @Test
@@ -91,6 +86,7 @@ class FreePlayTest : AbstractTetrisControllerTest() {
         val sUI = SpyUI()
         controller.run(sb, sUI)
         controller.handleKeyPress(KeyEvent.VK_LEFT)
+        delay(testControllerConfig.delayedAutoShift + testControllerConfig.autoRepeatRate.toLong())
         controller.handleKeyRelease(KeyEvent.VK_LEFT)
         assertTrue(sb.cellsValidityChecks > 0)
 
@@ -105,5 +101,11 @@ class FreePlayTest : AbstractTetrisControllerTest() {
         controller.handleKeyPress(KeyEvent.VK_SHIFT)
         controller.handleKeyRelease(KeyEvent.VK_SHIFT)
         assertTrue(initDrawHeldCellsCount < sUI.drawHeldCellsCount)
+    }
+
+    private fun delay(ms: Long) {
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start <= ms) {
+        }
     }
 }
