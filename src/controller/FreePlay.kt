@@ -64,6 +64,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         this.board = synchronizedBoard(board)
         this.view = synchronizedTetrisUI(view)
         this.isRunning = true
+        this.heldPiece = null
+        this.alreadyHolding = false
         this.pressedCmds.clear()
         this.config.generator.reset()
         this.activePiece = config.generator.generate()
@@ -86,8 +88,6 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         for (t in cmdRepeatFutures.values) t.cancel(true)
         cmdRepeatFutures.clear()
         lockActivePieceFuture.cancel(true)
-        heldPiece = null
-        alreadyHolding = false
         upcomingPiecesQueue.clear()
         mainLoop.cancel(true)
         isRunning = false
@@ -234,8 +234,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         }
 
         if (!canMoveDown) {
-            val running = !lockActivePieceFuture.let { it.isCancelled || it.isDone }
-            if (!running) {
+            val alreadLocking = !lockActivePieceFuture.let { it.isCancelled || it.isDone }
+            if (!alreadLocking) {
                 newLockActivePieceFuture()
             }
         }
