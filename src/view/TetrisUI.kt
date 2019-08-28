@@ -1,14 +1,13 @@
 package view
 
 import model.cell.Cell
-import java.util.Queue
 
 interface TetrisUI {
     fun drawCells(cells: Set<Cell>)
 
     fun drawHeldCells(cells: Set<Cell>)
 
-    fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>)
+    fun drawUpcomingCells(cellsQueue: List<Set<Cell>>)
 }
 
 /**
@@ -23,7 +22,7 @@ fun synchronizedTetrisUI(ui: TetrisUI): TetrisUI = object : TetrisUI {
 
     override fun drawHeldCells(cells: Set<Cell>) = synchronized(heldCellsLock) { ui.drawHeldCells(cells) }
 
-    override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) = synchronized(upcomingCellsLock) {
+    override fun drawUpcomingCells(cellsQueue: List<Set<Cell>>) = synchronized(upcomingCellsLock) {
         ui.drawUpcomingCells(cellsQueue)
     }
 }

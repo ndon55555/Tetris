@@ -138,7 +138,7 @@ class BoardView : View("Tetris"), TetrisUI {
         Platform.runLater { heldPiecePane.top = g }
     }
 
-    override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) {
+    override fun drawUpcomingCells(cellsQueue: List<Set<Cell>>) {
         val v = VBox()
         for (cells in cellsQueue) v.add(preview(cells))
         Platform.runLater { rightOfBoard.center = v }

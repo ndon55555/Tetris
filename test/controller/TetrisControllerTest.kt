@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import view.TetrisUI
 import java.awt.event.KeyEvent
-import java.util.Queue
 import kotlin.test.assertTrue
 
 abstract class AbstractTetrisControllerTest {
@@ -53,7 +52,7 @@ class FreePlayTest : AbstractTetrisControllerTest() {
             drawHeldCellsCount++
         }
 
-        override fun drawUpcomingCells(cellsQueue: Queue<Set<Cell>>) {
+        override fun drawUpcomingCells(cellsQueue: List<Set<Cell>>) {
             drawUpcomingCellsCount++
         }
     }

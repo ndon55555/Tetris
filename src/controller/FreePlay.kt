@@ -19,11 +19,8 @@ import model.tetrimino.Z
 import view.TetrisUI
 import view.synchronizedTetrisUI
 import java.util.Collections
-import java.util.LinkedList
-import java.util.Queue
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -52,7 +49,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     private var lockActivePieceFuture: Future<*> = finishedFuture()
     private var alreadyHolding = false
     private var heldPiece: StandardTetrimino? = null
-    private val upcomingPiecesQueue: Queue<StandardTetrimino> = LinkedBlockingQueue()
+    private val upcomingPiecesQueue = Collections.synchronizedList(mutableListOf<StandardTetrimino>())
     private val commandToAction = mapOf(
         Command.ROTATE_CCW to { forActivePiece { t -> config.rotationSystem.rotate90CCW(t, board) } },
         Command.ROTATE_CW to { forActivePiece { t -> config.rotationSystem.rotate90CW(t, board) } },
@@ -74,7 +71,7 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
         view.drawCells(emptySet())
         view.drawHeldCells(emptySet())
-        view.drawUpcomingCells(LinkedList(upcomingPiecesQueue.map { it.cells() }))
+        view.drawUpcomingCells(upcomingPiecesQueue.map { it.cells() })
 
         mainLoop = executor.scheduleWithFixedDelay(Runnable {
             if (Command.SOFT_DROP !in pressedCmds) {
@@ -261,9 +258,9 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
 
     private fun nextPiece(): StandardTetrimino {
         upcomingPiecesQueue.add(config.generator.generate())
-        val next = upcomingPiecesQueue.remove()
+        val next = upcomingPiecesQueue.removeAt(0)
         val upcomingCells = upcomingPiecesQueue.map { it.cells() }
-        view.drawUpcomingCells(LinkedList(upcomingCells))
+        view.drawUpcomingCells(upcomingCells)
         return next
     }
 
