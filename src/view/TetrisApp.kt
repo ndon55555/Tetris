@@ -1,6 +1,6 @@
 package view
 
-import controller.FreePlay
+import controller.SingleThreadFreePlay
 import controller.config.GameConfiguration
 import javafx.application.Platform
 import javafx.event.EventHandler
@@ -32,7 +32,7 @@ import tornadofx.hbox
 import tornadofx.row
 import tornadofx.top
 import tornadofx.vbox
-import java.util.Queue
+import kotlin.concurrent.thread
 
 class TetrisApp : App(BoardView::class) {
     override fun start(stage: Stage) {
@@ -42,7 +42,7 @@ class TetrisApp : App(BoardView::class) {
 }
 
 class BoardView : View("Tetris"), TetrisUI {
-    private val controller = FreePlay(GameConfiguration())
+    private val controller = SingleThreadFreePlay(GameConfiguration())
 
     private val boardWidth = BOARD_WIDTH // # cells
     private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells
@@ -77,7 +77,7 @@ class BoardView : View("Tetris"), TetrisUI {
 
                 center {
                     vbox {
-                        repeat(controller.gameConfiguration.previewPieces) { add(previewBackground()) }
+                        repeat(controller.config.previewPieces) { add(previewBackground()) }
                     }
                 }
 
@@ -85,7 +85,9 @@ class BoardView : View("Tetris"), TetrisUI {
                     button("Restart") {
                         action {
                             controller.stop()
-                            controller.run(BoardImpl(), view)
+                            thread {
+                                controller.run(BoardImpl(), view)
+                            }
                         }
 
                         isFocusTraversable = false
@@ -110,7 +112,9 @@ class BoardView : View("Tetris"), TetrisUI {
             }
         })
         val view = this
-        controller.run(BoardImpl(), view)
+        thread {
+            controller.run(BoardImpl(), view)
+        }
         super.onDock()
     }
 
