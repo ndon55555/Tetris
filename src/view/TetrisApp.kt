@@ -1,6 +1,7 @@
 package view
 
 import controller.FreePlay
+import controller.SingleThreadFreePlay
 import controller.config.GameConfiguration
 import javafx.application.Platform
 import javafx.event.EventHandler
@@ -32,8 +33,9 @@ import tornadofx.hbox
 import tornadofx.row
 import tornadofx.top
 import tornadofx.vbox
-import java.util.Queue
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class TetrisApp : App(BoardView::class) {
     override fun start(stage: Stage) {
         stage.isResizable = false
@@ -41,8 +43,9 @@ class TetrisApp : App(BoardView::class) {
     }
 }
 
+@ExperimentalTime
 class BoardView : View("Tetris"), TetrisUI {
-    private val controller = FreePlay(GameConfiguration())
+    private val controller = SingleThreadFreePlay(GameConfiguration())
 
     private val boardWidth = BOARD_WIDTH // # cells
     private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells

@@ -21,9 +21,29 @@ import view.synchronizedTetrisUI
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.milliseconds
+import kotlin.time.nanoseconds
 
-typealias TimeStamp = Long
+fun runAtFixedRate(period: Long, shouldContinue: () -> Boolean, event: () -> Unit) {
+    Executors.newSingleThreadScheduledExecutor { r ->
+        object : Thread() {
+            override fun run() {
+                if (!shouldContinue()) {
+                    this.interrupt()
+                } else {
+                    r.run()
+                }
+            }
+        }.apply { isDaemon = true }
+    }.scheduleAtFixedRate(event, 0, period, TimeUnit.MILLISECONDS)
+}
 
+@ExperimentalTime
+fun timeStamp(): Duration = System.nanoTime().nanoseconds
+
+@ExperimentalTime
 class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
     // Game settings
     lateinit var board: Board
@@ -32,13 +52,12 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
         get() = gameConfiguration
 
     private val FPS = 120
-    private val NANOSEC_PER_SEC = 1_000_000_000
     private val MILLISEC_PER_SEC = 1_000
 
-    private var lastAutoDrop by Delegates.notNull<TimeStamp>()
+    private var lastAutoDrop by Delegates.notNull<Duration>()
     private val pressedCmds = mutableSetOf<Command>() // TODO synchronize
     private val initialPress = mutableSetOf<Command>() // TODO synchronize
-    private val timeOfPrevAction = mutableMapOf<Command, TimeStamp>() // TODO synchronize
+    private val timeOfPrevAction = mutableMapOf<Command, Duration>() // TODO synchronize
     private val repeatableCmds = setOf(Command.LEFT, Command.RIGHT, Command.SOFT_DROP)
     private var isRunning = false
     private var heldPiece: StandardTetrimino? = null
@@ -46,7 +65,7 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
     private lateinit var activePiece: StandardTetrimino
     private val upcomingPiecesQueue = mutableListOf<StandardTetrimino>() // TODO synchronize
     private var shouldAutoLock = false
-    private var autoLockStartTime: TimeStamp? = null
+    private var autoLockStartTime: Duration? = null
 
     private val commandToAction = mapOf(
         Command.ROTATE_CCW to { forActivePiece { t -> config.rotationSystem.rotate90CCW(t, board) } },
@@ -61,7 +80,7 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
     override fun run(board: Board, view: TetrisUI) {
         this.board = synchronizedBoard(board)
         this.view = synchronizedTetrisUI(view)
-        this.lastAutoDrop = System.nanoTime()
+        this.lastAutoDrop = timeStamp()
         this.isRunning = true
         this.heldPiece = null
         this.alreadyHolding = false
@@ -79,15 +98,14 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
         view.drawHeldCells(emptySet())
         view.drawUpcomingCells(upcomingPiecesQueue.map { it.cells() })
 
-        Executors.newSingleThreadScheduledExecutor {
-            Thread { it.run() }.apply { isDaemon = true }
-        }.scheduleAtFixedRate({ frame() }, 0, MILLISEC_PER_SEC.toLong() / FPS, TimeUnit.MILLISECONDS)
+        runAtFixedRate(MILLISEC_PER_SEC.toLong() / FPS, { isRunning }) {
+            frame()
+        }
     }
 
     private fun frame() {
-        val curTime = System.nanoTime()
-        val autoDropTimePassed =
-            (curTime - lastAutoDrop) >= config.autoDropDelay * (NANOSEC_PER_SEC / MILLISEC_PER_SEC)
+        val curTime = timeStamp()
+        val autoDropTimePassed = (curTime - lastAutoDrop) >= config.autoDropDelay.milliseconds
         if (autoDropTimePassed) {
             if (Command.SOFT_DROP !in pressedCmds) {
                 (commandToAction[Command.SOFT_DROP]!!)()
@@ -100,7 +118,7 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
             if (cmd in pressedCmds) {
                 val delay = if (cmd in initialPress) config.delayedAutoShift else config.autoRepeatRate
                 val lastPressTime = timeOfPrevAction[cmd]!!
-                val delayTimePassed = (curTime - lastPressTime) >= delay * (NANOSEC_PER_SEC / MILLISEC_PER_SEC)
+                val delayTimePassed = (curTime - lastPressTime) >= delay.milliseconds
                 if (delayTimePassed) {
                     // perform cmd
                     (commandToAction[cmd]!!)()
@@ -222,13 +240,13 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
             if (!canMoveDown) {
                 if (!this.shouldAutoLock) {
                     this.shouldAutoLock = true
-                    this.autoLockStartTime = System.nanoTime()
+                    this.autoLockStartTime = timeStamp()
                 }
             }
 
             if (this.shouldAutoLock) {
                 val lockDelayPassed =
-                    System.nanoTime() - this.autoLockStartTime!! >= config.lockDelay * (NANOSEC_PER_SEC / MILLISEC_PER_SEC)
+                    (timeStamp() - this.autoLockStartTime!!) >= config.lockDelay.milliseconds
                 if (lockDelayPassed) {
                     (commandToAction[Command.HARD_DROP]!!)()
                     this.shouldAutoLock = false
@@ -251,7 +269,7 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
             (commandToAction[cmd]!!)()
             pressedCmds += cmd
             initialPress += cmd
-            timeOfPrevAction[cmd] = System.nanoTime()
+            timeOfPrevAction[cmd] = timeStamp()
         }
     }
 
