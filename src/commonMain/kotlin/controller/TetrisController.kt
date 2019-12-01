@@ -11,7 +11,7 @@ interface TetrisController {
 
     fun stop()
 
-    fun handleKeyPress(keyCode: Int)
+    fun handleKeyPress(key: String)
 
-    fun handleKeyRelease(keyCode: Int)
+    fun handleKeyRelease(key: String)
 }

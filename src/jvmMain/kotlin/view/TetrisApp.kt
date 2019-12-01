@@ -104,8 +104,8 @@ class BoardView : View("Tetris"), TetrisUI {
             override fun handle(event: KeyEvent?) {
                 if (event != null) {
                     when (event.eventType) {
-                        KeyEvent.KEY_PRESSED  -> controller.handleKeyPress(event.code.code)
-                        KeyEvent.KEY_RELEASED -> controller.handleKeyRelease(event.code.code)
+                        KeyEvent.KEY_PRESSED  -> controller.handleKeyPress(event.code.getName().toLowerCase())
+                        KeyEvent.KEY_RELEASED -> controller.handleKeyRelease(event.code.getName().toLowerCase())
                         else                  -> return
                     }
                 }

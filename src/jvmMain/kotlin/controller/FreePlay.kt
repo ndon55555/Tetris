@@ -93,8 +93,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         isRunning = false
     }
 
-    override fun handleKeyPress(keyCode: Int) {
-        val cmd = config.keyToCommand[keyCode] ?: return
+    override fun handleKeyPress(key: String) {
+        val cmd = config.keyToCommand[key] ?: return
 
         if (cmd !in pressedCmds) {
             handleOppositeCommand(cmd)
@@ -105,8 +105,8 @@ class FreePlay(var gameConfiguration: GameConfiguration) : TetrisController {
         }
     }
 
-    override fun handleKeyRelease(keyCode: Int) {
-        val cmd = config.keyToCommand[keyCode]
+    override fun handleKeyRelease(key: String) {
+        val cmd = config.keyToCommand[key]
         handleCommandRelease(cmd)
     }
 

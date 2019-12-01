@@ -1,7 +1,6 @@
 package controller.config
 
 import controller.Command
-import java.awt.event.KeyEvent
 
 class GameConfiguration {
     // All time values are in milliseconds
@@ -51,14 +50,14 @@ class GameConfiguration {
             field = value
         }
 
-    var keyToCommand = mutableMapOf(
-        KeyEvent.VK_Z to Command.ROTATE_CCW,
-        KeyEvent.VK_UP to Command.ROTATE_CW,
-        KeyEvent.VK_LEFT to Command.LEFT,
-        KeyEvent.VK_RIGHT to Command.RIGHT,
-        KeyEvent.VK_DOWN to Command.SOFT_DROP,
-        KeyEvent.VK_SPACE to Command.HARD_DROP,
-        KeyEvent.VK_SHIFT to Command.HOLD
+    var keyToCommand = mutableMapOf( // TODO need a better system for this
+        "z" to Command.ROTATE_CCW,
+        "up" to Command.ROTATE_CW,
+        "left" to Command.LEFT,
+        "right" to Command.RIGHT,
+        "down" to Command.SOFT_DROP,
+        "space" to Command.HARD_DROP,
+        "shift" to Command.HOLD
     ).withDefault { Command.DO_NOTHING }
 
     var rotationSystem: RotationSystem = SuperRotation()

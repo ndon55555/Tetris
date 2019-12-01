@@ -26,18 +26,19 @@ kotlin {
         }
     }
 
+    js {
+        val main by compilations.getting {
+            kotlinOptions {
+                sourceMap = true
+                moduleKind = "umd"
+            }
+        }
+    }
+
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-            }
-        }
-
-        val jvmTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
             }
         }
 
@@ -49,6 +50,21 @@ kotlin {
                     implementation(it)
                 }
                 implementation("no.tornado:tornadofx:2.0.0-SNAPSHOT")
+            }
+        }
+
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
+            }
+        }
+
+        val jsMain by getting {
+            dependencies {
+                dependsOn(commonMain)
+                implementation(kotlin("stdlib-js"))
             }
         }
     }
@@ -72,6 +88,24 @@ kotlin {
                 )
                 exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             }
+        }
+
+        register<Copy>("assembleWeb") {
+            dependsOn("jsMainClasses")
+
+            val kotlinJSStdLibJar = configurations.getByName("jsCompileClasspath").single {
+                it.name.matches(Regex("kotlin-stdlib-js-.+\\.jar"))
+            }
+
+            includeEmptyDirs = false
+            from(zipTree(kotlinJSStdLibJar), getByName("compileKotlinJs"))
+            include { fileTreeElement ->
+                val path = fileTreeElement.path
+                (path.endsWith(".js") || path.endsWith(".js.map")) &&
+                    (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
+            }
+            val webDir = "${projectDir}/web"
+            into(webDir)
         }
     }
 }

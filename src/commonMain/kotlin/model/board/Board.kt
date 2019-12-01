@@ -35,15 +35,13 @@ const val FIRST_VISIBLE_ROW = BOARD_HEIGHT - VISIBLE_BOARD_HEIGHT
  * Obtain a syncrhonized version of the given Board.
  */
 internal fun synchronizedBoard(b: Board): Board = object : Board {
-    @Synchronized
-    override fun areValidCells(vararg cells: Cell): Boolean = b.areValidCells(*cells)
+    private val lock = Any()
 
-    @Synchronized
-    override fun placeCells(vararg cells: Cell) = b.placeCells(*cells)
+    override fun areValidCells(vararg cells: Cell): Boolean = synchronized(lock) { b.areValidCells(*cells) }
 
-    @Synchronized
-    override fun clearLine(row: Int) = b.clearLine(row)
+    override fun placeCells(vararg cells: Cell) = synchronized(lock) { b.placeCells(*cells) }
 
-    @Synchronized
-    override fun getPlacedCells() = b.getPlacedCells()
+    override fun clearLine(row: Int) = synchronized(lock) { b.clearLine(row) }
+
+    override fun getPlacedCells() = synchronized(lock) { b.getPlacedCells() }
 }

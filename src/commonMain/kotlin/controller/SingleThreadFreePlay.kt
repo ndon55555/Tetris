@@ -245,10 +245,10 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
         this.isRunning = false
     }
 
-    override fun handleKeyPress(keyCode: Int) {
+    override fun handleKeyPress(key: String) {
         if (!isRunning) return
 
-        val cmd = config.keyToCommand[keyCode] ?: return
+        val cmd = config.keyToCommand[key] ?: return
 
         if (cmd !in pressedCmds) {
             (commandToAction[cmd]!!)()
@@ -258,8 +258,8 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
         }
     }
 
-    override fun handleKeyRelease(keyCode: Int) {
-        val cmd = config.keyToCommand[keyCode] ?: return
+    override fun handleKeyRelease(key: String) {
+        val cmd = config.keyToCommand[key] ?: return
 
         pressedCmds.remove(cmd)
         initialPress.remove(cmd)
