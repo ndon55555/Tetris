@@ -84,21 +84,21 @@ class FreePlayTest : AbstractTetrisControllerTest() {
         val sb = SpyBoard()
         val sUI = SpyUI()
         controller.run(sb, sUI)
-        controller.handleKeyPress(KeyEvent.VK_LEFT)
+        controller.handleKeyPress("left")
         delay(testControllerConfig.delayedAutoShift + testControllerConfig.autoRepeatRate.toLong())
-        controller.handleKeyRelease(KeyEvent.VK_LEFT)
+        controller.handleKeyRelease("left")
         assertTrue(sb.cellsValidityChecks > 0)
 
         val initCellsPlacements = sb.cellsPlacements
         val initDrawUpcomingCellsCount = sUI.drawUpcomingCellsCount
-        controller.handleKeyPress(KeyEvent.VK_SPACE)
-        controller.handleKeyRelease(KeyEvent.VK_SPACE)
+        controller.handleKeyPress("space")
+        controller.handleKeyRelease("space")
         assertTrue(initCellsPlacements < sb.cellsPlacements)
         assertTrue(initDrawUpcomingCellsCount < sUI.drawUpcomingCellsCount)
 
         val initDrawHeldCellsCount = sUI.drawHeldCellsCount
-        controller.handleKeyPress(KeyEvent.VK_SHIFT)
-        controller.handleKeyRelease(KeyEvent.VK_SHIFT)
+        controller.handleKeyPress("shift")
+        controller.handleKeyRelease("shift")
         assertTrue(initDrawHeldCellsCount < sUI.drawHeldCellsCount)
     }
 

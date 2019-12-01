@@ -48,6 +48,6 @@ class GameConfigurationTest {
 
     @Test
     fun keyToCommandTest() {
-        assertEquals(Command.DO_NOTHING, config.keyToCommand.getValue(Int.MAX_VALUE))
+        assertEquals(Command.DO_NOTHING, config.keyToCommand.getValue("some-unknown-value"))
     }
 }
