@@ -1,111 +1,91 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+group = "com.github.ndon55555"
+version = "1.0-SNAPSHOT"
 
 plugins {
+    kotlin("multiplatform") version "1.3.61"
     id("com.gradle.build-scan") version "2.4"
-    kotlin("jvm") version "1.3.40"
-    id("org.openjfx.javafxplugin") version "0.0.7"
-    id("com.dorongold.task-tree") version "1.4"
-    jacoco
-    application
 }
-
-group = "tetris"
-version = "0.0.1"
 
 repositories {
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("no.tornado:tornadofx:2.0.0-SNAPSHOT")
-
-    testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
-}
-
-apply(plugin = "org.openjfx.javafxplugin")
-
-javafx {
-    version = "12"
-    modules("javafx.controls")
-}
-
-jacoco {
-    toolVersion = "0.8.4"
-}
-
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_12
-}
-
-sourceSets["main"].java.srcDirs("src")
-sourceSets["test"].java.srcDirs("test")
-
-tasks {
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "12"
-    }
-
-    withType<Test> {
-        useJUnitPlatform {
-            includeEngines("junit-jupiter")
+kotlin {
+    jvm {
+        val main by compilations.getting {
+            kotlinOptions {
+                jvmTarget = "12"
+            }
         }
 
-        testLogging {
-            events = setOf(
-                TestLogEvent.FAILED,
-                TestLogEvent.SKIPPED,
-                TestLogEvent.STANDARD_ERROR,
-                TestLogEvent.STANDARD_OUT
-            )
-            exceptionFormat = TestExceptionFormat.FULL
+        val test by compilations.getting {
+            kotlinOptions {
+                jvmTarget = "12"
+            }
         }
     }
 
-    register<Jar>("uberJar") {
-        destinationDirectory.set(File("${project.rootDir}/artifacts"))
-
-        manifest {
-            attributes["Main-Class"] = "MainKt"
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib-common"))
+            }
         }
 
-        archiveClassifier.set("uber")
-        from(sourceSets.main.get().output)
-        dependsOn(configurations.runtimeClasspath)
-
-        from({
-            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-        })
-    }
-
-    withType<Wrapper> {
-        gradleVersion = "5.4.1"
-    }
-
-    jacocoTestReport {
-        reports {
-            xml.isEnabled = true
-            html.isEnabled = true
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
+            }
         }
 
-        dependsOn("test")
+        val jvmMain by getting {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(kotlin("stdlib-jdk8"))
+                javaFXDependencies(listOf("base", "controls", "graphics"), "12").forEach {
+                    implementation(it)
+                }
+                implementation("no.tornado:tornadofx:2.0.0-SNAPSHOT")
+            }
+        }
     }
 
-    check {
-        dependsOn("jacocoTestReport")
+    tasks {
+        withType<Wrapper> {
+            gradleVersion = "5.4.1"
+        }
+
+        withType<Test> {
+            useJUnitPlatform {
+                includeEngines("junit-jupiter")
+            }
+
+            testLogging {
+                events = setOf(
+                    org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+                    org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+                    org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR,
+                    org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT
+                )
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+        }
     }
 }
 
-application {
-    mainClassName = "MainKt"
-}
+fun javaFXDependencies(modules: List<String>, version: String): List<String> {
+    val currentOS = org.gradle.internal.os.OperatingSystem.current()
+    val platform = currentOS.let {
+        when {
+            it.isWindows -> "win"
+            it.isLinux   -> "linux"
+            it.isMacOsX  -> "mac"
+            else         -> ""
+        }
+    }
 
-buildScan {
-    termsOfServiceUrl = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
+    return modules.map { "org.openjfx:javafx-${it}:${version}:${platform}" }
 }

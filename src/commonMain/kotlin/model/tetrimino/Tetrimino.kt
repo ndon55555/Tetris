@@ -6,7 +6,6 @@ import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
 import model.cell.Posn
-import java.util.Objects
 
 interface Tetrimino {
     /**
@@ -93,7 +92,9 @@ sealed class StandardTetrimino(private val t: Tetrimino) : Tetrimino {
         return this.t == other.t
     }
 
-    override fun hashCode(): Int = Objects.hashCode(this.t)
+    override fun hashCode(): Int {
+        return 37 * this.t.hashCode()
+    }
 }
 
 class S private constructor(t: Tetrimino) : StandardTetrimino(t) {
