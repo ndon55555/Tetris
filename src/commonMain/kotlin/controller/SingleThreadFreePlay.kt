@@ -36,7 +36,7 @@ class SingleThreadFreePlay(var gameConfiguration: GameConfiguration) : TetrisCon
     private val config: GameConfiguration // Alias to shorten the name of the property
         get() = gameConfiguration
 
-    private val FPS = 120
+    private val FPS = 60
     private val MILLISEC_PER_SEC = 1_000
 
     private var lastAutoDrop by Delegates.notNull<Duration>()
