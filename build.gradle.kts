@@ -1,6 +1,11 @@
 group = "com.github.ndon55555"
 version = "1.0-SNAPSHOT"
 
+val common by extra("src/common")
+val browser by extra("src/browser")
+val webDir by extra("${projectDir}/web")
+val desktop by extra("src/desktop")
+
 plugins {
     kotlin("multiplatform") version "1.3.61"
     id("com.gradle.build-scan") version "2.4"
@@ -37,12 +42,14 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
+            kotlin.srcDir(common)
             dependencies {
                 implementation(kotlin("stdlib-common"))
             }
         }
 
         val jvmMain by getting {
+            kotlin.srcDir(desktop)
             dependsOn(commonMain)
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
@@ -62,6 +69,7 @@ kotlin {
         }
 
         val jsMain by getting {
+            kotlin.srcDir("${browser}/js")
             dependencies {
                 dependsOn(commonMain)
                 implementation(kotlin("stdlib-js"))
@@ -90,7 +98,16 @@ kotlin {
             }
         }
 
-        register<Copy>("assembleWeb") {
+        register("assembleWeb") {
+            dependsOn("assembleHtml", "assembleJs")
+        }
+
+        register<Copy>("assembleHtml") {
+            from(file("${browser}/html"))
+            into(webDir)
+        }
+
+        register<Copy>("assembleJs") {
             dependsOn("jsMainClasses")
 
             val kotlinJSStdLibJar = configurations.getByName("jsCompileClasspath").single {
@@ -104,7 +121,6 @@ kotlin {
                 (path.endsWith(".js") || path.endsWith(".js.map")) &&
                     (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
             }
-            val webDir = "${projectDir}/web"
             into(webDir)
         }
     }

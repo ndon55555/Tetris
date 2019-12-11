@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import view.TetrisUI
-import java.awt.event.KeyEvent
 import kotlin.test.assertTrue
 
 abstract class AbstractTetrisControllerTest {
