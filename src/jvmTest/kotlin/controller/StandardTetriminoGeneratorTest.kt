@@ -1,7 +1,7 @@
 package controller
 
-import controller.config.PurelyRandom
-import controller.config.RandomBagOf7
+import model.game.config.PurelyRandom
+import model.game.config.RandomBagOf7
 import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.L

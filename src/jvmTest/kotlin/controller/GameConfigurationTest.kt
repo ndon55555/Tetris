@@ -1,6 +1,7 @@
 package controller
 
-import controller.config.GameConfiguration
+import model.game.config.GameConfiguration
+import model.game.Command
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

@@ -1,6 +1,6 @@
 package controller
 
-import controller.config.GameConfiguration
+import model.game.config.GameConfiguration
 import model.board.Board
 import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell

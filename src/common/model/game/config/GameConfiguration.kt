@@ -1,6 +1,4 @@
-package controller.config
-
-import controller.Command
+package model.game.config
 
 class GameConfiguration {
     // All time values are in milliseconds
@@ -49,16 +47,6 @@ class GameConfiguration {
 
             field = value
         }
-
-    var keyToCommand = mutableMapOf( // TODO need a better system for this
-        "z" to Command.ROTATE_CCW,
-        "up" to Command.ROTATE_CW,
-        "left" to Command.LEFT,
-        "right" to Command.RIGHT,
-        "down" to Command.SOFT_DROP,
-        "space" to Command.HARD_DROP,
-        "shift" to Command.HOLD
-    ).withDefault { Command.DO_NOTHING }
 
     var rotationSystem: RotationSystem = SuperRotation()
 

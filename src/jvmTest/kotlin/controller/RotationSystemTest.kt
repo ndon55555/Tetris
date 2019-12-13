@@ -1,7 +1,7 @@
 package controller
 
-import controller.config.BasicRotation
-import controller.config.SuperRotation
+import model.game.config.BasicRotation
+import model.game.config.SuperRotation
 import model.board.Board
 import model.cell.Cell
 import model.tetrimino.I

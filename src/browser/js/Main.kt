@@ -1,7 +1,8 @@
-import controller.SingleThreadFreePlay
+import controller.ControllerImpl
 import controller.TetrisController
-import controller.config.GameConfiguration
+import model.game.config.GameConfiguration
 import model.board.BoardImpl
+import model.game.BaseGame
 import view.TetrisUI
 import view.TetrisWeb
 import kotlin.browser.document
@@ -9,17 +10,17 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 fun main() {
-    val controller: TetrisController = SingleThreadFreePlay(GameConfiguration().apply {
-        delayedAutoShift = 110
-        autoRepeatRate = 10
-    })
+    val controller: TetrisController = ControllerImpl()
     val view: TetrisUI = TetrisWeb()
 
     document.body?.onkeydown = {
         val key = it.key.toLowerCase()
         if (key == "r") {
             controller.stop()
-            controller.run(BoardImpl(), view)
+            controller.run(BaseGame(BoardImpl(), GameConfiguration().apply {
+                delayedAutoShift = 110
+                autoRepeatRate = 5
+            }), view)
         } else {
             controller.handleKeyPress(
                 when (key) {
@@ -50,5 +51,8 @@ fun main() {
         )
     }
 
-    controller.run(BoardImpl(), view)
+    controller.run(BaseGame(BoardImpl(), GameConfiguration().apply {
+        delayedAutoShift = 110
+        autoRepeatRate = 5
+    }), view)
 }

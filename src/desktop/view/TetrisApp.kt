@@ -1,7 +1,6 @@
 package view
 
-import controller.SingleThreadFreePlay
-import controller.config.GameConfiguration
+import controller.ControllerImpl
 import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.geometry.Insets
@@ -19,6 +18,8 @@ import model.board.BoardImpl
 import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell
 import model.cell.CellColor
+import model.game.BaseGame
+import model.game.config.GameConfiguration
 import tornadofx.App
 import tornadofx.View
 import tornadofx.action
@@ -44,7 +45,8 @@ class TetrisApp : App(BoardView::class) {
 
 @ExperimentalTime
 class BoardView : View("Tetris"), TetrisUI {
-    private val controller = SingleThreadFreePlay(GameConfiguration())
+    private val controller = ControllerImpl()
+    private var model = BaseGame(BoardImpl(), GameConfiguration())
 
     private val boardWidth = BOARD_WIDTH // # cells
     private val boardHeight = VISIBLE_BOARD_HEIGHT // # cells
@@ -79,7 +81,7 @@ class BoardView : View("Tetris"), TetrisUI {
 
                 center {
                     vbox {
-                        repeat(controller.gameConfiguration.previewPieces) { add(previewBackground()) }
+                        repeat(model.config.previewPieces) { add(previewBackground()) }
                     }
                 }
 
@@ -87,7 +89,8 @@ class BoardView : View("Tetris"), TetrisUI {
                     button("Restart") {
                         action {
                             controller.stop()
-                            controller.run(BoardImpl(), view)
+                            model = BaseGame(BoardImpl(), GameConfiguration())
+                            controller.run(model, view)
                         }
 
                         isFocusTraversable = false
@@ -112,7 +115,7 @@ class BoardView : View("Tetris"), TetrisUI {
             }
         })
         val view = this
-        controller.run(BoardImpl(), view)
+        controller.run(model, view)
         super.onDock()
     }
 

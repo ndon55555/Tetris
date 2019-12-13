@@ -1,4 +1,4 @@
-package controller.config
+package model.game.config
 
 import model.tetrimino.I
 import model.tetrimino.J

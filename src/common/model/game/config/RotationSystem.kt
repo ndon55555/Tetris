@@ -1,4 +1,4 @@
-package controller.config
+package model.game.config
 
 import model.board.Board
 import model.tetrimino.I
