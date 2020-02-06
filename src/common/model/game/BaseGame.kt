@@ -157,7 +157,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
                 val lockDelayPassed =
                     (timeStamp() - this.autoLockStartTime!!) >= config.lockDelay.milliseconds
                 if (lockDelayPassed) {
-                    perform(Command.HARD_DROP)
+                    activePiece = activePiece.hardDrop()
                     this.autoLockStartTime = null
                 }
             }
