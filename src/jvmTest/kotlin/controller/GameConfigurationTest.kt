@@ -46,9 +46,4 @@ class GameConfigurationTest {
             config.lockDelay = -1
         }
     }
-
-    @Test
-    fun keyToCommandTest() {
-        assertEquals(Command.DO_NOTHING, config.keyToCommand.getValue("some-unknown-value"))
-    }
 }

@@ -4,11 +4,13 @@ import model.game.config.GameConfiguration
 import model.board.Board
 import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell
+import model.game.BaseGame
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import view.TetrisUI
 import kotlin.test.assertTrue
+import kotlin.time.ExperimentalTime
 
 abstract class AbstractTetrisControllerTest {
     @Test
@@ -21,6 +23,7 @@ abstract class AbstractTetrisControllerTest {
     abstract fun handleKeyPressAndReleaseTest()
 }
 
+@ExperimentalTime
 class FreePlayTest : AbstractTetrisControllerTest() {
     private class SpyBoard : Board {
         var cellsValidityChecks = 0
@@ -64,17 +67,17 @@ class FreePlayTest : AbstractTetrisControllerTest() {
 
     @BeforeEach
     fun init() {
-        controller = FreePlay(testControllerConfig)
+        controller = ControllerImpl()
     }
 
     @Test
     override fun runTest() {
-        assertDoesNotThrow { controller.run(SpyBoard(), SpyUI()) }
+        assertDoesNotThrow { controller.run(BaseGame(SpyBoard(), testControllerConfig), SpyUI()) }
     }
 
     @Test
     override fun stopTest() {
-        controller.run(SpyBoard(), SpyUI())
+        controller.run(BaseGame(SpyBoard(), testControllerConfig), SpyUI())
         assertDoesNotThrow { controller.stop() }
     }
 
@@ -82,7 +85,7 @@ class FreePlayTest : AbstractTetrisControllerTest() {
     override fun handleKeyPressAndReleaseTest() {
         val sb = SpyBoard()
         val sUI = SpyUI()
-        controller.run(sb, sUI)
+        controller.run(BaseGame(sb, testControllerConfig), sUI)
         controller.handleKeyPress("left")
         delay(testControllerConfig.delayedAutoShift + testControllerConfig.autoRepeatRate.toLong())
         controller.handleKeyRelease("left")
