@@ -14,18 +14,10 @@ before_script:
   - chmod +x gradlew
 
 script:
-  - >
-    docker run
-    -v "$(pwd)":/repo
-    -v "$GRADLE_HOME":"$GRADLE_HOME"
-    openjdk:12
-    bash -c "cd /repo
-    && ./gradlew build -g $GRADLE_HOME --scan --stacktrace --build-cache --parallel
-    && ./gradlew --stop"
+  - docker-compose run gradle-build
 
 before_cache:
   - sudo chown -R $USER:$USER $GRADLE_HOME
-  - rm -f  $GRADLE_HOME/caches/modules-2/modules-2.lock
   - rm -fr $GRADLE_HOME/caches/*/plugin-resolution/
   - ls -l $GRADLE_HOME/caches/ | grep -o -P "\d+\.\d+\.\d+\S*$" | xargs -I {} rm -rf $GRADLE_HOME/caches/{}
   - find $GRADLE_HOME/ -name "*.lock" | xargs -I {} rm -f {}

@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  gradle-build:
+    image: openjdk:12
+    volumes:
+      - .:/repo
+      - $GRADLE_HOME:$GRADLE_HOME
+    command: >
+      sh -c "cd /repo
+      && ./gradlew build --gradle-user-home /home/.gradle --stacktrace --build-cache --parallel
+      && ./gradlew --stop"

@@ -101,6 +101,10 @@ kotlin {
             dependsOn("assembleHtml", "assembleJs")
         }
 
+        register<Delete>("cleanWeb") {
+            delete(webDir)
+        }
+
         register<Copy>("assembleHtml") {
             from(file("${browser}/html"))
             into(webDir)
