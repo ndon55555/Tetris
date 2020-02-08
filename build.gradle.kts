@@ -8,7 +8,6 @@ val desktop by extra("src/desktop")
 
 plugins {
     kotlin("multiplatform") version "1.3.61"
-    id("com.gradle.build-scan") version "2.4"
 }
 
 repositories {
