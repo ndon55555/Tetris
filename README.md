@@ -1,5 +1,5 @@
 # Tetris
-[![Build Status](https://travis-ci.org/ndon55555/Tetris.svg?branch=master)](https://travis-ci.org/ndon55555/Tetris)
+[![Build Status](https://travis-ci.org/ndon55555/Tetris.svg?branch=multiplatform)](https://travis-ci.org/ndon55555/Tetris)
 
 ### Requirements
 * [Java 12](https://jdk.java.net/12/) on your shell path
