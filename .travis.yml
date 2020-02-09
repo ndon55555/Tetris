@@ -18,8 +18,11 @@ script:
 
 before_cache:
   - sudo chown -R $USER:$USER $GRADLE_HOME
-  - rm -fr $GRADLE_HOME/caches/*/plugin-resolution/
-  - ls -l $GRADLE_HOME/caches/ | grep -o -P "\d+\.\d+\.\d+\S*$" | xargs -I {} rm -rf $GRADLE_HOME/caches/{}
+  - rm -rf $GRADLE_HOME/caches/*/plugin-resolution/
+  - >
+    ls -l $GRADLE_HOME/caches/
+    | grep --only-matching --perl-regexp "\d+\.\d+\.\d+\S*$"
+    | xargs --replace rm -rf $GRADLE_HOME/caches/{}
   - find $GRADLE_HOME/ -name "*.lock" | xargs -I {} rm -f {}
 
 cache:
