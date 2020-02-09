@@ -25,7 +25,7 @@ jobs:
           - "$GRADLE_HOME/caches/"
           - "$GRADLE_HOME/wrapper/"
     - stage: deploy
-      if: branch = master
+      if: branch = multiplatform
       before_install:
         - echo "$WEBTRIS_RSA_PRIVATE" > /tmp/rsa_secret
         - chmod 600 /tmp/rsa_secret
