@@ -37,7 +37,7 @@ jobs:
       script:
         - docker-compose run gradle-assemble-web
         - pushd ./web
-        - git diff --no-patch --exit-code || (git add --all && git commit --message "Travis CI push" && git push)
+        - git add --all && git commit --message "Travis CI push" && git push
         - popd
       before_cache:
         - chmod +x ./bin/prepare-gradle-cache.sh
