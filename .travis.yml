@@ -7,25 +7,44 @@ services:
 env:
   global:
     - GRADLE_HOME=$HOME/.gradle
+    - TERM=dumb
 
-install: skip
+jobs:
+  include:
+    - stage: test
+      install: skip
+      before_script:
+        - chmod +x ./gradlew
+      script:
+        - docker-compose run gradle-build
+      before_cache:
+        - chmod +x ./bin/prepare-gradle-cache.sh
+        - ./bin/prepare-gradle-cache.sh
+      cache:
+        directories:
+          - "$GRADLE_HOME/caches/"
+          - "$GRADLE_HOME/wrapper/"
+    - stage: deploy
+      if: branch = master
+      before_install:
+        - echo "$WEBTRIS_RSA_PRIVATE" > /tmp/rsa_secret
+        - chmod 600 /tmp/rsa_secret
+        - export GIT_SSH_COMMAND="ssh -i /tmp/rsa_secret"
+      install:
+        - git clone git@github.com:ndon55555/webtris.git ./web
+      before_script:
+        - chmod +x ./gradlew
+      script:
+        - docker-compose run gradle-assemble-web
+        - pushd ./web
+        - git diff --no-patch --exit-code || (git add --all && git commit --message "Travis CI push" && git push)
+        - popd
+      before_cache:
+        - chmod +x ./bin/prepare-gradle-cache.sh
+        - ./bin/prepare-gradle-cache.sh
+      cache:
+        directories:
+          - "$GRADLE_HOME/caches/"
+          - "$GRADLE_HOME/wrapper/"
 
-before_script:
-  - chmod +x gradlew
 
-script:
-  - docker-compose run gradle-build
-
-before_cache:
-  - sudo chown -R $USER:$USER $GRADLE_HOME
-  - rm -rf $GRADLE_HOME/caches/*/plugin-resolution/
-  - >
-    ls -l $GRADLE_HOME/caches/
-    | grep --only-matching --perl-regexp "\d+\.\d+\.\d+\S*$"
-    | xargs --replace rm -rf $GRADLE_HOME/caches/{}
-  - find $GRADLE_HOME/ -name "*.lock" | xargs -I {} rm -f {}
-
-cache:
-  directories:
-    - $GRADLE_HOME/caches/
-    - $GRADLE_HOME/wrapper/

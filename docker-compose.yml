@@ -1,5 +1,7 @@
 version: "3.7"
+
 services:
+  # Run tests
   gradle-build:
     image: openjdk:12
     volumes:
@@ -9,3 +11,11 @@ services:
       sh -c "cd /repo
       && TERM=dumb ./gradlew build --gradle-user-home /home/.gradle --stacktrace --build-cache --parallel
       && ./gradlew --stop"
+  # Create browser files
+  gradle-assemble-web:
+    image: openjdk:12
+    volumes:
+      - .:/repo
+      - $GRADLE_HOME:$GRADLE_HOME
+    command: >
+      sh -c "cd /repo && TERM=dumb ./gradlew assembleWeb"
