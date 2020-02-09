@@ -1,11 +1,9 @@
-package controller
+package model
 
 import model.game.config.GameConfiguration
-import model.game.Command
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertEquals
 
 class GameConfigurationTest {
     lateinit var config: GameConfiguration

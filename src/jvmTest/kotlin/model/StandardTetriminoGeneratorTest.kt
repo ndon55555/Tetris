@@ -1,4 +1,4 @@
-package controller
+package model
 
 import model.game.config.PurelyRandom
 import model.game.config.RandomBagOf7
@@ -52,14 +52,18 @@ class RandomBagOf7Test : AbstractStandardTetriminoGeneratorTest() {
             pieces += generator.generate()
         }
 
-        assertTrue(allStandardTetriminos.containsAll(pieces) && pieces.containsAll(allStandardTetriminos))
+        assertTrue(
+            allStandardTetriminos.containsAll(pieces) && pieces.containsAll(
+                allStandardTetriminos
+            )
+        )
     }
 }
 
 class PurelyRandomTest : AbstractStandardTetriminoGeneratorTest() {
     @Test
     override fun generateTest() {
-        val tolerance = 0.01
+        val tolerance = 0.05
         val tally = hashMapOf<StandardTetrimino, Int>().withDefault { 0 }
         val generator = PurelyRandom()
         val n = 7 * 1000

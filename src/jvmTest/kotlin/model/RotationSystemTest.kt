@@ -1,9 +1,9 @@
-package controller
+package model
 
-import model.game.config.BasicRotation
-import model.game.config.SuperRotation
 import model.board.Board
 import model.cell.Cell
+import model.game.config.BasicRotation
+import model.game.config.SuperRotation
 import model.tetrimino.I
 import model.tetrimino.T
 import org.junit.jupiter.api.Test
