@@ -5,8 +5,8 @@ class GameConfiguration {
     var showGhost: Boolean = true
     var autoRepeatRate: Int = 30
         set(value) {
-            if (value <= 0) {
-                throw IllegalArgumentException("Auto repeat rate must be positive")
+            if (value < 0) {
+                throw IllegalArgumentException("Auto repeat rate must be nonnegative")
             }
 
             field = value

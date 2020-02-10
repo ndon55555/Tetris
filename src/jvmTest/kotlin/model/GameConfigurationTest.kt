@@ -16,7 +16,7 @@ class GameConfigurationTest {
     @Test
     fun autoRepeatRateTest() {
         assertThrows<IllegalArgumentException> {
-            config.autoRepeatRate = 0
+            config.autoRepeatRate = -1
         }
     }
 
