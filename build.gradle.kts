@@ -11,6 +11,7 @@ plugins {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
@@ -72,6 +73,7 @@ kotlin {
             dependencies {
                 dependsOn(commonMain)
                 implementation(kotlin("stdlib-js"))
+                implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.7.1")
             }
         }
     }
@@ -113,12 +115,17 @@ kotlin {
         register<Copy>("assembleJs") {
             dependsOn("jsMainClasses")
 
-            val kotlinJSStdLibJar = configurations.getByName("jsCompileClasspath").single {
-                it.name.matches(Regex("kotlin-stdlib-js-.+\\.jar"))
+            val jsJar = { regex: String ->
+                configurations.getByName("jsRuntimeClasspath").single {
+                    it.name.matches(Regex(regex))
+                }
             }
 
+            val stdLib = jsJar("kotlin-stdlib-js-.+\\.jar")
+            val kotlinxHtml = jsJar("kotlinx-html-js-.+\\.jar")
+
             includeEmptyDirs = false
-            from(zipTree(kotlinJSStdLibJar), getByName("compileKotlinJs"))
+            from(zipTree(stdLib), zipTree(kotlinxHtml), getByName("compileKotlinJs"))
             include { fileTreeElement ->
                 val path = fileTreeElement.path
                 (path.endsWith(".js") || path.endsWith(".js.map")) &&
