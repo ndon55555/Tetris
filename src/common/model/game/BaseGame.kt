@@ -88,6 +88,12 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         for (cmd in repeatableCmds) {
             if (cmd in pressedCmds) {
                 val delay = if (cmd in initialPress) config.delayedAutoShift else config.autoRepeatRate
+                if (delay == 0) {
+                    var pieceMoved = perform(cmd)
+                    while (pieceMoved) {
+                        pieceMoved = perform(cmd)
+                    }
+                }
                 val lastPressTime = timeOfPrevAction[cmd]!!
                 val delayTimePassed = (curTime - lastPressTime) >= delay.milliseconds
                 if (delayTimePassed) {
@@ -135,7 +141,8 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         upcomingPiecesHandlers += action
     }
 
-    private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino) {
+    private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino): Boolean {
+        val prevActivePiece = activePiece
         synchronized(activePiece) {
             val candidate = op(activePiece)
             val next = if (candidate.isValid()) candidate else activePiece
@@ -164,6 +171,8 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
 
             for (handler in boardChangeHandlers) handler()
         }
+
+        return activePiece != prevActivePiece
     }
 
     private fun StandardTetrimino.isValid(): Boolean = board.areValidCells(*this.cells().toTypedArray())
@@ -251,7 +260,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         return ghostCells
     }
 
-    private fun perform(cmd: Command) = when (cmd) {
+    private fun perform(cmd: Command): Boolean = when (cmd) {
         Command.ROTATE_CCW -> forActivePiece { config.rotationSystem.rotate90CCW(it, board) }
         Command.ROTATE_CW  -> forActivePiece { config.rotationSystem.rotate90CW(it, board) }
         Command.LEFT       -> forActivePiece { it.moveLeft() }
@@ -260,6 +269,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         Command.HARD_DROP  -> forActivePiece { it.hardDrop() }
         Command.HOLD       -> forActivePiece { it.hold() }
         Command.DO_NOTHING -> {
+            false
         }
     }
 }
