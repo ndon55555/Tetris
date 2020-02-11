@@ -10,6 +10,7 @@ import kotlinx.html.style
 import model.board.BoardImpl
 import model.game.BaseGame
 import model.game.config.GameConfiguration
+import org.w3c.dom.HTMLButtonElement
 import view.TetrisUI
 import view.TetrisWeb
 import kotlin.browser.document
@@ -18,53 +19,13 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 fun main() {
     loadHTML()
-
-    val controller: TetrisController = ControllerImpl()
-    val view: TetrisUI = TetrisWeb()
-
-    document.body?.onkeydown = {
-        val key = it.key.toLowerCase()
-        if (key == "r") {
-            controller.stop()
-            controller.run(BaseGame(BoardImpl(), GameConfiguration().apply {
-                delayedAutoShift = 110
-                autoRepeatRate = 5
-            }), view)
-        } else {
-            controller.handleKeyPress(
-                when (key) {
-                    "arrowleft"  -> "left"
-                    "arrowright" -> "right"
-                    "arrowup"    -> "up"
-                    "arrowdown"  -> "down"
-                    " "          -> "space"
-                    "shift"      -> "shift"
-                    else         -> key
-                }
-            )
-        }
-    }
-
-    document.body?.onkeyup = {
-        val key = it.key.toLowerCase()
-        controller.handleKeyRelease(
-            when (key) {
-                "arrowleft"  -> "left"
-                "arrowright" -> "right"
-                "arrowup"    -> "up"
-                "arrowdown"  -> "down"
-                " "          -> "space"
-                "shift"      -> "shift"
-                else         -> key
-            }
-        )
-    }
-
-    controller.run(BaseGame(BoardImpl(), GameConfiguration().apply {
-        delayedAutoShift = 110
-        autoRepeatRate = 5
-    }), view)
+    loadGame()
 }
+
+const val BOARD_ID = "board"
+const val HOLD_ID = "hold"
+const val UPCOMING_PIECES_ID = "upcomingPieces"
+const val RESTART_ID = "restart"
 
 fun loadHTML() {
     document.body!!.append {
@@ -72,7 +33,7 @@ fun loadHTML() {
             div {
                 style = "display: inline-block; vertical-align: top"
                 canvas {
-                    id = "hold"
+                    id = HOLD_ID
                     width = "120"
                     height = "120"
                 }
@@ -86,16 +47,59 @@ fun loadHTML() {
             div {
                 style = "display: inline-block; vertical-align: top"
                 canvas {
-                    id = "board"
+                    id = BOARD_ID
                     width = "300"
                     height = "600"
                 }
             }
             +" "
             div {
-                id = "upcomingPieces"
+                id = UPCOMING_PIECES_ID
                 style = "display: inline-block; vertical-align: top"
             }
         }
     }
+}
+
+@ExperimentalTime
+fun loadGame() {
+    val controller: TetrisController = ControllerImpl()
+    val view: TetrisUI = TetrisWeb()
+
+    val restartGame = {
+        controller.stop()
+        controller.run(BaseGame(BoardImpl(), GameConfiguration()), view)
+    }
+
+    val keysToCommand = { key: String ->
+        when (key) {
+            "arrowleft"  -> "left"
+            "arrowright" -> "right"
+            "arrowup"    -> "up"
+            "arrowdown"  -> "down"
+            " "          -> "space"
+            "shift"      -> "shift"
+            else         -> key
+        }
+    }
+
+    document.body?.onkeydown = {
+        val key = it.key.toLowerCase()
+        if (key == "r") {
+            restartGame()
+        } else {
+            controller.handleKeyPress(keysToCommand(key))
+        }
+    }
+
+    document.body?.onkeyup = {
+        val key = it.key.toLowerCase()
+        controller.handleKeyRelease(keysToCommand(key))
+    }
+
+    (document.getElementById(RESTART_ID) as HTMLButtonElement).onclick = {
+        restartGame()
+    }
+
+    controller.run(BaseGame(BoardImpl(), GameConfiguration()), view)
 }

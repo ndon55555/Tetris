@@ -1,5 +1,8 @@
 package view
 
+import BOARD_ID
+import HOLD_ID
+import UPCOMING_PIECES_ID
 import model.board.BOARD_WIDTH
 import model.cell.Cell
 import model.cell.CellColor
@@ -8,10 +11,6 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
 import kotlin.dom.clear
-
-const val BOARD_ID = "board"
-const val HOLD_ID = "hold"
-const val UPCOMING_PIECES_ID = "upcomingPieces"
 
 class TetrisWeb : TetrisUI {
     override fun drawCells(cells: Set<Cell>) {
