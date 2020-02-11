@@ -4,18 +4,22 @@ services:
   # Run tests
   gradle-build:
     image: openjdk:12
+    environment:
+      - TERM=dumb
     volumes:
       - .:/repo
       - $GRADLE_HOME:$GRADLE_HOME
     command: >
       sh -c "cd /repo
-      && TERM=dumb ./gradlew build --gradle-user-home /home/.gradle --stacktrace --build-cache --parallel
+      && ./gradlew build --gradle-user-home /home/.gradle --stacktrace --build-cache --parallel
       && ./gradlew --stop"
   # Create browser files
   gradle-assemble-web:
     image: openjdk:12
+    environment:
+      - TERM=dumb
     volumes:
       - .:/repo
       - $GRADLE_HOME:$GRADLE_HOME
     command: >
-      sh -c "cd /repo && TERM=dumb ./gradlew assembleWeb"
+      sh -c "cd /repo && DEV_MODE=false ./gradlew assembleWeb"

@@ -35,7 +35,7 @@ jobs:
       before_script:
         - chmod +x ./gradlew
       script:
-        - DEV_MODE=false docker-compose run gradle-assemble-web
+        - docker-compose run gradle-assemble-web
         - pushd ./web
         - git add --all && ((git commit --message "Travis CI push" && git push) || true)
         - popd
