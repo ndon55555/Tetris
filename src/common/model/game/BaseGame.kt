@@ -6,6 +6,7 @@ import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
 import model.game.config.GameConfiguration
+import model.sync
 import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.L
@@ -143,7 +144,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
 
     private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino): Boolean {
         val prevActivePiece = activePiece
-        synchronized(activePiece) {
+        sync(activePiece) {
             val candidate = op(activePiece)
             val next = if (candidate.isValid()) candidate else activePiece
             val canMoveDown = next.moveDown().isValid()
