@@ -2,6 +2,7 @@ package model.game
 
 import model.board.BOARD_WIDTH
 import model.board.Board
+import model.board.FIRST_VISIBLE_ROW
 import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
@@ -182,11 +183,22 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         var t = this
         while (t.moveDown().isValid()) t = t.moveDown()
         t.placeOnBoard()
+
+        // check for "top out"
+        if (t.cells().all { it.row < FIRST_VISIBLE_ROW }) {
+            finished = true
+        }
+
         t.clearCompletedLines()
-        val newPiece = nextPiece()
-        // check for topping out
+        var newPiece = nextPiece()
+
+        // check for "block out"
         if (!newPiece.isValid()) {
             finished = true
+        }
+
+        if (newPiece.moveDown().isValid()) {
+            newPiece = newPiece.moveDown()
         }
 
         alreadyHolding = false
