@@ -1,5 +1,6 @@
 package controller
 
+import model.board.BOARD_HEIGHT
 import model.game.config.GameConfiguration
 import model.board.Board
 import model.board.VISIBLE_BOARD_HEIGHT
@@ -30,7 +31,8 @@ class FreePlayTest : AbstractTetrisControllerTest() {
         var cellsPlacements = 0
         override fun areValidCells(vararg cells: Cell): Boolean {
             cellsValidityChecks++
-            return cells.all { it.row < VISIBLE_BOARD_HEIGHT }
+            val boardBottomRow = BOARD_HEIGHT - 1
+            return cells.all { it.row <= boardBottomRow }
         }
 
         override fun placeCells(vararg cells: Cell) {
