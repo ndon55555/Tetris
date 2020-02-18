@@ -31,8 +31,8 @@ class ControllerImpl : TetrisController {
         game.onHeldPieceChange { view.drawHeldCells(game.heldCells()) }
         game.onUpcomingPiecesChange { view.drawUpcomingCells(game.upcomingCells()) }
         game.start()
-        view.drawCells(emptySet())
-        view.drawHeldCells(emptySet())
+        view.drawCells(game.allCells().standardize())
+        view.drawHeldCells(game.heldCells())
         view.drawUpcomingCells(game.upcomingCells())
 
         runAtFixedRate(1000L / fps, { !game.finished }) {
