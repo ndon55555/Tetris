@@ -28,8 +28,14 @@ const val UPCOMING_PIECES_ID = "upcomingPieces"
 const val RESTART_ID = "restart"
 
 fun loadHTML() {
+    document.body!!.style.apply {
+        backgroundSize = "cover"
+        backgroundRepeat = "no-repeat"
+        backgroundImage = "url('https://media.giphy.com/media/5PjafLZFxMWc/giphy.gif')"
+    }
     document.body!!.append {
         span {
+            style = "position: absolute; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%)"
             div {
                 style = "display: inline-block; vertical-align: top"
                 canvas {
