@@ -72,7 +72,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         alreadyHolding = false
         upcomingPiecesQueue = mutableListOf()
         autoLockStartTime = null
-        activePiece = config.generator.generate()
+        activePiece = config.generator.generate().moveDown()
         repeat(config.previewPieces) { upcomingPiecesQueue.add(config.generator.generate()) }
     }
 
