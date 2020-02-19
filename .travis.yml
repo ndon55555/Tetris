@@ -11,6 +11,7 @@ env:
 
 jobs:
   include:
+
     - stage: test
       install: skip
       before_script:
@@ -24,6 +25,7 @@ jobs:
         directories:
           - "$GRADLE_HOME/caches/"
           - "$GRADLE_HOME/wrapper/"
+
     - stage: deploy
       if: branch = multiplatform
       before_install:
@@ -35,6 +37,7 @@ jobs:
       before_script:
         - chmod +x ./gradlew
       script:
+        - rm -r web/*
         - docker-compose run gradle-assemble-web
         - pushd ./web
         - git add --all && ((git commit --message "Travis CI push" && git push) || true)
