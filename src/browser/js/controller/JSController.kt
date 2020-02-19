@@ -3,18 +3,14 @@ package controller
 import kotlin.browser.window
 
 actual fun runAtFixedRate(period: Long, shouldContinue: () -> Boolean, event: () -> Unit) {
-    var prevEventTime = window.performance.now()
-
-    fun step(curTime: Double) {
+    var intervalId: Int? = null
+    intervalId = window.setInterval({
         if (shouldContinue()) {
-            if (curTime - prevEventTime >= period) {
-                event()
-                prevEventTime = curTime
+            event()
+        } else {
+            intervalId?.let {
+                window.clearInterval(it)
             }
-
-            window.requestAnimationFrame { timestamp -> step(timestamp) }
         }
-    }
-
-    window.requestAnimationFrame { timestamp -> step(timestamp) }
+    }, period.toInt())
 }
