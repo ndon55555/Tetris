@@ -6,8 +6,8 @@ services:
 
 env:
   global:
-    - GRADLE_HOME=$HOME/.gradle
-    - TERM=dumb
+    - GRADLE_HOME="$HOME/.gradle"
+    - TERM="dumb"
 
 jobs:
   include:
@@ -19,8 +19,8 @@ jobs:
       script:
         - docker-compose run gradle-build
       before_cache:
-        - chmod +x ./bin/prepare-gradle-cache.sh
-        - ./bin/prepare-gradle-cache.sh
+        - rm -f "$GRADLE_HOME/caches/modules-2/modules-2.lock"
+        - rm -rf "$GRADLE_HOME/caches/*/plugin-resolution/"
       cache:
         directories:
           - "$GRADLE_HOME/caches/"
@@ -37,14 +37,14 @@ jobs:
       before_script:
         - chmod +x ./gradlew
       script:
-        - rm -r web/*
+        - find web/* | grep --invert-match --regexp "*/\.*" --regexp "*README.md" | rm -rf
         - docker-compose run gradle-assemble-web
         - pushd ./web
         - git add --all && ((git commit --message "Travis CI push" && git push) || true)
         - popd
       before_cache:
-        - chmod +x ./bin/prepare-gradle-cache.sh
-        - ./bin/prepare-gradle-cache.sh
+        - rm -f "$GRADLE_HOME/caches/modules-2/modules-2.lock"
+        - rm -rf "$GRADLE_HOME/caches/*/plugin-resolution/"
       cache:
         directories:
           - "$GRADLE_HOME/caches/"
