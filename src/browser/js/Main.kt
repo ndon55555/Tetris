@@ -29,9 +29,9 @@ const val RESTART_ID = "restart"
 
 fun loadHTML() {
     document.body!!.style.apply {
-        backgroundSize = "cover"
-        backgroundRepeat = "no-repeat"
         backgroundImage = "url('https://media.giphy.com/media/5PjafLZFxMWc/giphy.gif')"
+        backgroundRepeat = "no-repeat"
+        backgroundSize = "100% 100%"
     }
     document.body!!.append {
         span {
