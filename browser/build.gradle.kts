@@ -2,6 +2,10 @@ plugins {
     kotlin("multiplatform") version "1.3.61"
 }
 
+apply {
+    plugin("kotlin-dce-js")
+}
+
 val webDir by extra("artifacts/web")
 val devMode = (System.getenv("DEV_MODE") ?: "true").toBoolean()
 
