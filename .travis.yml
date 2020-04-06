@@ -38,7 +38,7 @@ jobs:
       before_script:
         - chmod +x ./gradlew
       script:
-        - find "$GENERATED_BROWSER_FILES_PATH" -mindepth 1 -maxdepth 1 | grep --invert-match --regexp "*README.md" | xargs rm -rf
+        - find "$GENERATED_BROWSER_FILES_PATH" -mindepth 1 -maxdepth 1 | grep --invert-match --regexp "/\.git" --regexp "/README.md" | xargs rm -rf
         - docker-compose run gradle-assemble-web
         - pushd "$GENERATED_BROWSER_FILES_PATH"
         - git add --all && ((git commit --message "Travis CI push" && git push) || true)
