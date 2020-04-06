@@ -8,7 +8,7 @@ env:
   global:
     - GRADLE_HOME="$HOME/.gradle"
     - TERM="dumb"
-    - GENERATED_BROWSER_FILES_PATH="$HOME/browser/artifacts/web"
+    - GENERATED_BROWSER_FILES_PATH="./browser/artifacts/web"
 
 jobs:
   include:
