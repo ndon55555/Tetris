@@ -22,4 +22,4 @@ services:
       - .:/repo
       - $GRADLE_HOME:$GRADLE_HOME
     command: >
-      sh -c "cd /repo && DEV_MODE=false ./gradlew assembleWeb"
+      sh -c "cd /repo && DEV_MODE=false ./gradlew :browser:assembleWeb"
