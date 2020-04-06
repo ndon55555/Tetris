@@ -16,3 +16,6 @@
 * To have fine control of multiple key presses at once, keep track of the keys pressed and released.
 * If it's necessary to stop a thread that is currently sleeping, call its `interrupt()` method. Wherever the `Thread.sleep()` inside of that thread is executed must be wrapped in a `try-catch` block that handles `InterruptedException`.
 * To make sure a thread stops when the main program has ended, set it to a daemon thread before execution.
+* At the time of this writing, Travis CI doesn't have a text area where you can input multiline environment variables.
+  They only provide a text field. To get around this, simply replace new lines with `\n`, then prefix the string with `$'`
+  and append `'` (e.g. `$'like\nthis'`).
