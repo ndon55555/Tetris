@@ -7,7 +7,8 @@
 ### Start Playing
 1. `git clone https://github.com/ndon55555/Tetris.git`
 2. `cd Tetris`
-3. `./gradlew run`
+3. `./gradlew :desktop:runnableJar`
+4. `java -jar desktop/build/libs/desktris.jar`
 
 ### Things I learned during this project:
 * Iterating over a parallel stream of a synchronized collection is not automatically thread-safe.
