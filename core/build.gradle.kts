@@ -1,10 +1,25 @@
-plugins {
-    kotlin("multiplatform") version "1.3.61"
-}
-
 kotlin {
-    js()
-    jvm()
+    js {
+        val main by compilations.getting {
+            kotlinOptions {
+                moduleKind = "umd"
+            }
+        }
+    }
+
+    jvm {
+        val main by compilations.getting {
+            kotlinOptions {
+                jvmTarget = "12"
+            }
+        }
+
+        val test by compilations.getting {
+            kotlinOptions {
+                jvmTarget = "12"
+            }
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
