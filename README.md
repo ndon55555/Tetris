@@ -1,16 +1,22 @@
 # Tetris
 [![Build Status](https://travis-ci.org/ndon55555/Tetris.svg?branch=multiplatform)](https://travis-ci.org/ndon55555/Tetris)
 
-### Requirements
+## Requirements
 * [Java 12](https://jdk.java.net/12/) on your shell path
 
-### Start Playing
+## Start Playing
+### Desktop
 1. `git clone https://github.com/ndon55555/Tetris.git`
 2. `cd Tetris`
-3. `./gradlew :desktop:runnableJar`
-4. `java -jar desktop/build/libs/desktris.jar`
+3. `./gradlew :desktop:runGame`
 
-### Things I learned during this project:
+### Browser
+1. `git clone https://github.com/ndon55555/Tetris.git`
+2. `cd Tetris`
+3. `./gradlew :browser:runServer`
+4. Go to `localhost:8080` in your browser.
+
+## Things I learned during this project:
 * Iterating over a parallel stream of a synchronized collection is not automatically thread-safe.
 * `Timer.schedule(...)` vs `Timer.scheduleAtFixedRate(...)`.
 * To set an event handler on the entire window in TornadoFX, register it on the current stage during the `View`'s `onDock()` method.

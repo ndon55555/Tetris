@@ -43,6 +43,11 @@ tasks {
         configurations = mutableListOf(jvmMainCompilation.compileDependencyFiles as Configuration)
         archiveFileName.set("desktris.jar")
     }
+
+    register<Exec>("runGame") {
+        dependsOn("runnableJar")
+        commandLine("java", "-jar", buildDir.resolve("libs/desktris.jar").absolutePath)
+    }
 }
 
 fun javaFXDependencies(modules: List<String>, version: String): List<String> {
