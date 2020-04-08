@@ -22,5 +22,6 @@ services:
     volumes:
       - .:/repo
       - $GRADLE_HOME:$GRADLE_HOME
+      - $WEB_DIR:$WEB_DIR
     command: >
       sh -c "cd /repo && DEV_MODE=false ./gradlew :browser:assembleWeb"

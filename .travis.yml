@@ -33,6 +33,7 @@ jobs:
         - echo "$WEBTRIS_RSA_PRIVATE" > /tmp/rsa_secret
         - chmod 600 /tmp/rsa_secret
         - export GIT_SSH_COMMAND="ssh -i /tmp/rsa_secret"
+        - mkdir --parents "$STATIC_WEB_FILES_DIR"
       install:
         - git clone git@github.com:ndon55555/webtris.git "$STATIC_WEB_FILES_DIR"
       before_script:
