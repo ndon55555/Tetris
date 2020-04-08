@@ -18,6 +18,7 @@ services:
     image: openjdk:12
     environment:
       - TERM=dumb
+      - WEB_DIR=$WEB_DIR
     volumes:
       - .:/repo
       - $GRADLE_HOME:$GRADLE_HOME
