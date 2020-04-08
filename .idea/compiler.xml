@@ -4,6 +4,8 @@
     <bytecodeTargetLevel>
       <module name="com.github.ndon55555.tetris.jvmMain" target="12" />
       <module name="com.github.ndon55555.tetris.jvmTest" target="12" />
+      <module name="tetris.browser.main" target="12" />
+      <module name="tetris.browser.test" target="12" />
       <module name="tetris.desktop.main" target="12" />
       <module name="tetris.desktop.test" target="12" />
       <module name="tetris.main" target="12" />
