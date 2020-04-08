@@ -8,7 +8,7 @@ env:
   global:
     - GRADLE_HOME="$HOME/.gradle"
     - TERM="dumb"
-    - GENERATED_BROWSER_FILES_PATH="browser/artifacts/web"
+    - STATIC_WEB_FILES_DIR="/tmp/webtris"
 
 jobs:
   include:
@@ -34,14 +34,14 @@ jobs:
         - chmod 600 /tmp/rsa_secret
         - export GIT_SSH_COMMAND="ssh -i /tmp/rsa_secret"
       install:
-        - git clone git@github.com:ndon55555/webtris.git "$GENERATED_BROWSER_FILES_PATH"
+        - git clone git@github.com:ndon55555/webtris.git "$STATIC_WEB_FILES_DIR"
       before_script:
         - chmod +x ./gradlew
       script:
-        - find "$GENERATED_BROWSER_FILES_PATH" -mindepth 1 -maxdepth 1 | grep --invert-match --regexp "/\.git" --regexp "/README.md" | xargs rm -rf
-        - docker-compose run gradle-assemble-web
-        - pushd "$GENERATED_BROWSER_FILES_PATH"
-        - git add --all && ((git commit --message "Travis CI push" && git push) || true)
+        - find "$STATIC_WEB_FILES_DIR" -mindepth 1 -maxdepth 1 | grep --invert-match --regexp "/\.git" --regexp "/README.md" | xargs rm -rf
+        - WEB_DIR="$STATIC_WEB_FILES_DIR" docker-compose run gradle-assemble-web
+        - pushd "$STATIC_WEB_FILES_DIR"
+        - git add --all && (git commit --message "Travis CI push" || true) && git push
         - popd
       before_cache:
         - rm -f "$GRADLE_HOME/caches/modules-2/modules-2.lock"
