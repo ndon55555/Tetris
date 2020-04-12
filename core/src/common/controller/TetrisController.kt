@@ -1,6 +1,7 @@
 package controller
 
 import model.game.BaseGame
+import model.game.Command
 import view.TetrisUI
 import kotlin.time.ExperimentalTime
 
@@ -13,7 +14,7 @@ interface TetrisController {
 
     fun stop()
 
-    fun handleKeyPress(key: String)
+    fun handleCmdPress(cmd: Command)
 
-    fun handleKeyRelease(key: String)
+    fun handleCmdRelease(cmd: Command)
 }

@@ -4,6 +4,7 @@ import controller.ControllerImpl
 import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.geometry.Insets
+import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.GridPane
@@ -19,6 +20,7 @@ import model.board.VISIBLE_BOARD_HEIGHT
 import model.cell.Cell
 import model.cell.CellColor
 import model.game.BaseGame
+import model.game.Command
 import model.game.config.GameConfiguration
 import tornadofx.App
 import tornadofx.View
@@ -101,14 +103,27 @@ class BoardView : View("Tetris"), TetrisUI {
     }
 
     override fun onDock() {
+        var keyToCommand = { key: KeyCode ->
+            when (key) {
+                KeyCode.Z     -> Command.ROTATE_CCW
+                KeyCode.UP   -> Command.ROTATE_CW
+                KeyCode.LEFT -> Command.LEFT
+                KeyCode.RIGHT      -> Command.RIGHT
+                KeyCode.DOWN  -> Command.SOFT_DROP
+                KeyCode.SPACE -> Command.HARD_DROP
+                KeyCode.SHIFT -> Command.HOLD
+                else    -> Command.DO_NOTHING
+            }
+        }
+
         // to understand why this handler is set here instead of on the root,
         // see https://stackoverflow.com/questions/52356548/tornadofx-key-press-listener-issues
         currentStage?.addEventHandler(KeyEvent.ANY, object : EventHandler<KeyEvent> {
             override fun handle(event: KeyEvent?) {
                 if (event != null) {
                     when (event.eventType) {
-                        KeyEvent.KEY_PRESSED  -> controller.handleKeyPress(event.code.getName().toLowerCase())
-                        KeyEvent.KEY_RELEASED -> controller.handleKeyRelease(event.code.getName().toLowerCase())
+                        KeyEvent.KEY_PRESSED  -> controller.handleCmdPress(keyToCommand(event.code))
+                        KeyEvent.KEY_RELEASED -> controller.handleCmdRelease(keyToCommand(event.code))
                         else                  -> return
                     }
                 }

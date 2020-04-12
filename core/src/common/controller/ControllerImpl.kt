@@ -14,15 +14,6 @@ class ControllerImpl : TetrisController {
     val fps = 60
     lateinit var game: BaseGame
     lateinit var view: TetrisUI
-    private var keyToCommand = mutableMapOf( // TODO need a better system for this
-        "z" to Command.ROTATE_CCW,
-        "up" to Command.ROTATE_CW,
-        "left" to Command.LEFT,
-        "right" to Command.RIGHT,
-        "down" to Command.SOFT_DROP,
-        "space" to Command.HARD_DROP,
-        "shift" to Command.HOLD
-    )
 
     override fun run(game: BaseGame, view: TetrisUI) {
         this.game = game
@@ -44,16 +35,16 @@ class ControllerImpl : TetrisController {
         game.finished = true
     }
 
-    override fun handleKeyPress(key: String) {
+    override fun handleCmdPress(cmd: Command) {
         if (game.finished) return
 
-        game.commandInitiated(keyToCommand.getOrElse(key, { Command.DO_NOTHING }))
+        game.commandInitiated(cmd)
     }
 
-    override fun handleKeyRelease(key: String) {
+    override fun handleCmdRelease(cmd: Command) {
         if (game.finished) return
 
-        game.commandStopped(keyToCommand.getOrElse(key, { Command.DO_NOTHING }))
+        game.commandStopped(cmd)
     }
 
     // Changes the cells in such a way that they can be rendered properly

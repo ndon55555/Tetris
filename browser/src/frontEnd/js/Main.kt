@@ -9,6 +9,7 @@ import kotlinx.html.js.span
 import kotlinx.html.style
 import model.board.BoardImpl
 import model.game.BaseGame
+import model.game.Command
 import model.game.config.GameConfiguration
 import org.w3c.dom.HTMLButtonElement
 import view.TetrisUI
@@ -79,13 +80,14 @@ fun loadGame() {
 
     val keysToCommand = { key: String ->
         when (key) {
-            "arrowleft"  -> "left"
-            "arrowright" -> "right"
-            "arrowup"    -> "up"
-            "arrowdown"  -> "down"
-            " "          -> "space"
-            "shift"      -> "shift"
-            else         -> key
+            "arrowleft"  -> Command.LEFT
+            "arrowright" -> Command.RIGHT
+            "arrowup"    -> Command.ROTATE_CW
+            "arrowdown"  -> Command.SOFT_DROP
+            "z"          -> Command.ROTATE_CCW
+            " "          -> Command.HARD_DROP
+            "shift"      -> Command.HOLD
+            else         -> Command.DO_NOTHING
         }
     }
 
@@ -94,13 +96,13 @@ fun loadGame() {
         if (key == "r") {
             restartGame()
         } else {
-            controller.handleKeyPress(keysToCommand(key))
+            controller.handleCmdPress(keysToCommand(key))
         }
     }
 
     document.body?.onkeyup = {
         val key = it.key.toLowerCase()
-        controller.handleKeyRelease(keysToCommand(key))
+        controller.handleCmdRelease(keysToCommand(key))
     }
 
     (document.getElementById(RESTART_ID) as HTMLButtonElement).onclick = {
