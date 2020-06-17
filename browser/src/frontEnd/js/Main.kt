@@ -29,11 +29,11 @@ const val UPCOMING_PIECES_ID = "upcomingPieces"
 const val RESTART_ID = "restart"
 
 fun loadHTML() {
-    document.body!!.style.apply {
-        backgroundImage = "url('https://media.giphy.com/media/5PjafLZFxMWc/giphy.gif')"
-        backgroundRepeat = "no-repeat"
-        backgroundSize = "100% 100%"
-    }
+    // document.body!!.style.apply {
+    //     backgroundImage = "url('https://media.giphy.com/media/5PjafLZFxMWc/giphy.gif')"
+    //     backgroundRepeat = "no-repeat"
+    //     backgroundSize = "100% 100%"
+    // }
     document.body!!.append {
         span {
             style = "position: absolute; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%)"
@@ -105,8 +105,10 @@ fun loadGame() {
         controller.handleCmdRelease(keysToCommand(key))
     }
 
-    (document.getElementById(RESTART_ID) as HTMLButtonElement).onclick = {
+    val restartButton = document.getElementById(RESTART_ID) as HTMLButtonElement
+    restartButton.onclick = {
         restartGame()
+        restartButton.blur() // remove focus after the button is pressed so key presses don't activate it
     }
 
     controller.run(BaseGame(BoardImpl(), GameConfiguration()), view)
