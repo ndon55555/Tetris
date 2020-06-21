@@ -2,8 +2,8 @@ package controller
 
 import model.board.FIRST_VISIBLE_ROW
 import model.cell.Cell
-import model.game.BaseGame
 import model.game.Command
+import model.game.Game
 import view.TetrisUI
 import kotlin.time.ExperimentalTime
 
@@ -12,10 +12,10 @@ expect fun runAtFixedRate(period: Long, shouldContinue: () -> Boolean, event: ()
 @ExperimentalTime
 class ControllerImpl : TetrisController {
     val fps = 60
-    lateinit var game: BaseGame
+    lateinit var game: Game
     lateinit var view: TetrisUI
 
-    override fun run(game: BaseGame, view: TetrisUI) {
+    override fun run(game: Game, view: TetrisUI) {
         this.game = game
         this.view = view
         game.onBoardChange { view.drawCells(game.allCells().standardize()) }
@@ -26,23 +26,23 @@ class ControllerImpl : TetrisController {
         view.drawHeldCells(game.heldCells())
         view.drawUpcomingCells(game.upcomingCells())
 
-        runAtFixedRate(1000L / fps, { !game.finished }) {
+        runAtFixedRate(1000L / fps, { !game.finished() }) {
             game.frame()
         }
     }
 
     override fun stop() {
-        game.finished = true
+        game.stop()
     }
 
     override fun handleCmdPress(cmd: Command) {
-        if (game.finished) return
+        if (game.finished()) return
 
         game.commandInitiated(cmd)
     }
 
     override fun handleCmdRelease(cmd: Command) {
-        if (game.finished) return
+        if (game.finished()) return
 
         game.commandStopped(cmd)
     }

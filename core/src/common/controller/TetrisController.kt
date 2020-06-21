@@ -1,7 +1,7 @@
 package controller
 
-import model.game.BaseGame
 import model.game.Command
+import model.game.Game
 import view.TetrisUI
 import kotlin.time.ExperimentalTime
 
@@ -10,7 +10,7 @@ import kotlin.time.ExperimentalTime
  */
 @ExperimentalTime
 interface TetrisController {
-    fun run(game: BaseGame, view: TetrisUI)
+    fun run(game: Game, view: TetrisUI)
 
     fun stop()
 

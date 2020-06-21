@@ -25,8 +25,8 @@ import kotlin.time.milliseconds
 expect fun timeStamp(): Duration
 
 @ExperimentalTime
-open class BaseGame(board: Board, val config: GameConfiguration) {
-    var finished = false
+open class BaseGame(board: Board, val config: GameConfiguration) : Game {
+    var gameOver = false
     private var board: Board = object : Board {
         override fun areValidCells(vararg cells: Cell): Boolean = board.areValidCells(*cells)
 
@@ -60,7 +60,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
     private val heldPieceHandlers = mutableSetOf<() -> Unit>()
     private val upcomingPiecesHandlers = mutableSetOf<() -> Unit>()
 
-    fun start() {
+    override fun start() {
         if (alreadyStarted) throw Exception("game had already been started")
         alreadyStarted = true
 
@@ -76,7 +76,11 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         repeat(config.previewPieces) { upcomingPiecesQueue.add(config.generator.generate()) }
     }
 
-    fun frame() {
+    override fun stop() {
+        gameOver = true
+    }
+
+    override fun frame() {
         val curTime = timeStamp()
         val autoDropTimePassed = (curTime - lastAutoDrop) >= config.autoDropDelay.milliseconds
         if (autoDropTimePassed) {
@@ -107,16 +111,20 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         }
     }
 
-    fun allCells(): Set<Cell> = board.getPlacedCells().toMutableSet().also {
+    override fun finished(): Boolean {
+        return gameOver
+    }
+
+    override fun allCells(): Set<Cell> = board.getPlacedCells().toMutableSet().also {
         it.addAll(activePiece.cells())
         if (config.showGhost) it.addAll(activePiece.ghostCells())
     }
 
-    fun heldCells(): Set<Cell> = heldPiece?.cells() ?: emptySet()
+    override fun heldCells(): Set<Cell> = heldPiece?.cells() ?: emptySet()
 
-    fun upcomingCells(): List<Set<Cell>> = upcomingPiecesQueue.map { it.cells() }
+    override fun upcomingCells(): List<Set<Cell>> = upcomingPiecesQueue.map { it.cells() }
 
-    fun commandInitiated(cmd: Command) {
+    override fun commandInitiated(cmd: Command) {
         if (cmd !in pressedCmds) {
             perform(cmd)
             pressedCmds.add(cmd)
@@ -125,21 +133,21 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
         }
     }
 
-    fun commandStopped(cmd: Command) {
+    override fun commandStopped(cmd: Command) {
         pressedCmds.remove(cmd)
         initialPress.remove(cmd)
         timeOfPrevAction.remove(cmd)
     }
 
-    fun onBoardChange(action: () -> Unit) {
+    override fun onBoardChange(action: () -> Unit) {
         boardChangeHandlers += action
     }
 
-    fun onHeldPieceChange(action: () -> Unit) {
+    override fun onHeldPieceChange(action: () -> Unit) {
         heldPieceHandlers += action
     }
 
-    fun onUpcomingPiecesChange(action: () -> Unit) {
+    override fun onUpcomingPiecesChange(action: () -> Unit) {
         upcomingPiecesHandlers += action
     }
 
@@ -186,7 +194,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
 
         // check for "top out"
         if (t.cells().all { it.row < FIRST_VISIBLE_ROW }) {
-            finished = true
+            stop()
         }
 
         t.clearCompletedLines()
@@ -194,7 +202,7 @@ open class BaseGame(board: Board, val config: GameConfiguration) {
 
         // check for "block out"
         if (!newPiece.isValid()) {
-            finished = true
+            stop()
         }
 
         if (newPiece.moveDown().isValid()) {
