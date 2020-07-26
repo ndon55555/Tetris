@@ -23,7 +23,7 @@ kotlin {
             dependencies {
                 implementation(project(":core"))
                 implementation(kotlin("stdlib-jdk8"))
-                javaFXDependencies(listOf("base", "controls", "graphics"), "12").forEach {
+                javaFXDependencies(listOf("base", "controls", "graphics"), "12.+").forEach {
                     implementation(it)
                 }
                 implementation("no.tornado:tornadofx:2.0.0-SNAPSHOT")

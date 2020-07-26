@@ -58,8 +58,8 @@ kotlin {
             kotlin.srcDir("test/jvm")
             dependencies {
                 implementation(kotlin("test-junit5"))
-                implementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
-                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
+                implementation("org.junit.jupiter:junit-jupiter-api:5.5.+")
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.+")
             }
         }
     }

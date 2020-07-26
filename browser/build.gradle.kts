@@ -52,8 +52,8 @@ kotlin {
             kotlin.srcDir(backEndDir.resolve("jvm"))
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
-                implementation("io.ktor:ktor-server-netty:1.3.2")
-                implementation("ch.qos.logback:logback-classic:1.2.3")
+                implementation("io.ktor:ktor-server-netty:1.3.+")
+                implementation("ch.qos.logback:logback-classic:1.2.+")
             }
         }
     }
