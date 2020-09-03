@@ -2,7 +2,6 @@ package model
 
 import model.board.Board
 import model.board.BoardImpl
-import model.board.synchronizedBoard
 import model.cell.CellColor
 import model.cell.CellImpl
 import kotlin.test.assertEquals
@@ -89,8 +88,4 @@ abstract class AbstractBoardTest {
 
 class BoardImplTest(): AbstractBoardTest() {
     override fun boardImplementation(): Board = BoardImpl()
-}
-
-class SynchronizedBoardTest(): AbstractBoardTest() {
-    override fun boardImplementation(): Board = synchronizedBoard(BoardImpl())
 }

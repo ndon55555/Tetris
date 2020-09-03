@@ -7,7 +7,6 @@ import model.cell.Cell
 import model.cell.CellColor
 import model.cell.CellImpl
 import model.game.config.GameConfiguration
-import model.sync
 import model.tetrimino.I
 import model.tetrimino.J
 import model.tetrimino.L
@@ -153,34 +152,32 @@ open class BaseGame(board: Board, val config: GameConfiguration) : Game {
 
     private fun forActivePiece(op: (StandardTetrimino) -> StandardTetrimino): Boolean {
         val prevActivePiece = activePiece
-        sync(activePiece) {
-            val candidate = op(activePiece)
-            val next = if (candidate.isValid()) candidate else activePiece
-            val canMoveDown = next.moveDown().isValid()
-            val pieceMoved = next != activePiece
-            activePiece = next
+        val candidate = op(activePiece)
+        val next = if (candidate.isValid()) candidate else activePiece
+        val canMoveDown = next.moveDown().isValid()
+        val pieceMoved = next != activePiece
+        activePiece = next
 
-            if (canMoveDown || pieceMoved) {
+        if (canMoveDown || pieceMoved) {
+            this.autoLockStartTime = null
+        }
+
+        if (!canMoveDown) {
+            if (autoLockStartTime == null) {
+                this.autoLockStartTime = timeStamp()
+            }
+        }
+
+        if (autoLockStartTime != null) {
+            val lockDelayPassed =
+                (timeStamp() - this.autoLockStartTime!!) >= config.lockDelay.milliseconds
+            if (lockDelayPassed) {
+                activePiece = activePiece.hardDrop()
                 this.autoLockStartTime = null
             }
-
-            if (!canMoveDown) {
-                if (autoLockStartTime == null) {
-                    this.autoLockStartTime = timeStamp()
-                }
-            }
-
-            if (autoLockStartTime != null) {
-                val lockDelayPassed =
-                    (timeStamp() - this.autoLockStartTime!!) >= config.lockDelay.milliseconds
-                if (lockDelayPassed) {
-                    activePiece = activePiece.hardDrop()
-                    this.autoLockStartTime = null
-                }
-            }
-
-            for (handler in boardChangeHandlers) handler()
         }
+
+        for (handler in boardChangeHandlers) handler()
 
         return activePiece != prevActivePiece
     }
