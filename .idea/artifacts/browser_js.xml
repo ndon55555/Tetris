@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="browser-js">
-    <output-path>C:\Users\Don\IdeaProjects\tetris\browser\build\libs</output-path>
-    <root id="archive" name="browser-js.jar">
-      <element id="module-output" name="browser.com.github.ndon55555.browser.jsMain" />
-    </root>
-  </artifact>
-</component>
