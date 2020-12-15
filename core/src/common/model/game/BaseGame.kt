@@ -26,7 +26,7 @@ expect fun timeStamp(): Duration
 @ExperimentalTime
 open class BaseGame(board: Board, val config: GameConfiguration) : Game {
     var gameOver = false
-    private var board: Board = object : Board {
+    private val board: Board = object : Board {
         override fun areValidCells(vararg cells: Cell): Boolean = board.areValidCells(*cells)
 
         override fun placeCells(vararg cells: Cell) {
@@ -280,12 +280,12 @@ open class BaseGame(board: Board, val config: GameConfiguration) : Game {
 
     private fun perform(cmd: Command): Boolean = when (cmd) {
         Command.ROTATE_CCW -> forActivePiece { config.rotationSystem.rotate90CCW(it, board) }
-        Command.ROTATE_CW  -> forActivePiece { config.rotationSystem.rotate90CW(it, board) }
-        Command.LEFT       -> forActivePiece { it.moveLeft() }
-        Command.RIGHT      -> forActivePiece { it.moveRight() }
-        Command.SOFT_DROP  -> forActivePiece { it.moveDown() }
-        Command.HARD_DROP  -> forActivePiece { it.hardDrop() }
-        Command.HOLD       -> forActivePiece { it.hold() }
+        Command.ROTATE_CW -> forActivePiece { config.rotationSystem.rotate90CW(it, board) }
+        Command.LEFT -> forActivePiece { it.moveLeft() }
+        Command.RIGHT -> forActivePiece { it.moveRight() }
+        Command.SOFT_DROP -> forActivePiece { it.moveDown() }
+        Command.HARD_DROP -> forActivePiece { it.hardDrop() }
+        Command.HOLD -> forActivePiece { it.hold() }
         Command.DO_NOTHING -> {
             false
         }
