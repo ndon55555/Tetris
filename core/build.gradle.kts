@@ -80,5 +80,17 @@ kotlin {
                 exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             }
         }
+
+        register<JacocoReport>("jacocoTestReport") {
+            dependsOn(withType<Test>())
+
+            reports {
+                xml.isEnabled = true
+            }
+        }
     }
+}
+
+jacoco {
+    toolVersion = "0.8.5"
 }

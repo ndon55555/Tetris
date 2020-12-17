@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.3.71" apply false
+    jacoco
 }
 
 allprojects {
@@ -20,6 +21,7 @@ subprojects {
 
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
+        plugin("org.gradle.jacoco")
     }
 
     dependencyLocking {
