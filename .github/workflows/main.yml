@@ -1,0 +1,15 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12"
+
+      - name: To be deleted
+        run: ls -al
+      - run: docker-compose run gradle-build
