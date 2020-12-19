@@ -10,6 +10,7 @@ jobs:
         with:
           java-version: "12"
 
-      - name: To be deleted
-        run: ls -al
+      - name: Ensure Gradle script executable
+        run: chmod +x ./gradlew
+
       - run: docker-compose run gradle-build
