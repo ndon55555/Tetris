@@ -20,7 +20,7 @@ jobs:
 
   deploy:
     name: Deploy Webtris
-    if: ${{ github.ref }} == "refs/heads/multiplatform"
+    if: ${{ github.ref == "refs/heads/multiplatform" }}
     needs: test
     runs-on: ubuntu-18.04
     steps:
@@ -45,13 +45,13 @@ jobs:
         run: docker-compose run gradle-assemble-web
 
       - name: Create Deploy Key File
-        run: echo "WEB_DEPLOY_KEY=$(mktemp)" >> "$GITHUB_ENV"
+        run: echo "WEB_DEPLOY_KEY_FILE=$(mktemp)" >> "$GITHUB_ENV"
 
       - name: Setup Git SSH with Deploy Key
         run: |
-          echo "$secrets.WEBTRIS_PRIVATE_DEPLOY_KEY" > "$WEB_DEPLOY_KEY"
-          chmod 600 "$WEB_DEPLOY_KEY"
-          export GIT_SSH_COMMAND=\"ssh -i $WEB_DEPLOY_KEY\"
+          echo ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }} > $WEB_DEPLOY_KEY_FILE
+          chmod 600 $WEB_DEPLOY_KEY_FILE
+          export GIT_SSH_COMMAND="ssh -i $WEB_DEPLOY_KEY_FILE"
 
       - name: Publish Web Files
         uses: dmnemec/copy_file_to_another_repo_action@v1.0.4
