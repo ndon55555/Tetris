@@ -17,3 +17,38 @@ jobs:
         run: chmod +x ./gradlew
 
       - run: docker-compose run gradle-build
+
+  deploy:
+    if: ${{ github.ref == "" }}
+    needs: test
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12"
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v1
+
+      - name: Ensure Gradle script executable
+        run: chmod +x ./gradlew
+
+      - name: Create Web Files Dir
+        run: echo "STATIC_WEB_FILES_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
+
+      - name: Generate Web Files
+        run: docker-compose run gradle-assemble-web
+
+      - name: Publish Web Files
+        uses: dmnemec/copy_file_to_another_repo_action@v1
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}
+        with:
+          destination_branch: "master"
+          destination_repo: "ndon55555/webtris"
+          source_file: "$STATIC_WEB_FILES_DIR/*"
+          user_email: "ndon55555@gmail.com"
+          user_name: "ndon55555"
