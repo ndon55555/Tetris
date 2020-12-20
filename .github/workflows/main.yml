@@ -37,7 +37,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Create Web Files Dir
-        run: echo "STATIC_WEB_FILES_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
+        run: echo "WEB_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
 
       - name: Generate Web Files
         run: docker-compose run gradle-assemble-web
@@ -49,6 +49,6 @@ jobs:
         with:
           destination_branch: "master"
           destination_repo: "ndon55555/webtris"
-          source_file: "$STATIC_WEB_FILES_DIR/*"
+          source_file: "$WEB_DIR/*"
           user_email: "ndon55555@gmail.com"
           user_name: "ndon55555"
