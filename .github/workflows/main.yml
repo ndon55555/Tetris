@@ -60,6 +60,6 @@ jobs:
         with:
           destination_branch: "master"
           destination_repo: "ndon55555/webtris"
-          source_file: "${{ env.WEB_DIR }}/*"
+          source_file: "${{ env.WEB_DIR }}/"*
           user_email: "ndon55555@gmail.com"
           user_name: "ndon55555"
