@@ -51,3 +51,4 @@ jobs:
           BRANCH: master
           FOLDER: ${{ env.WEB_DIR }}
           SSH_PRIVATE_KEY: ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}
+          SKIP_EMPTY_COMMITS: true
