@@ -49,7 +49,7 @@ jobs:
 
       - name: Setup Git SSH with Deploy Key
         run: |
-          echo ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }} > $WEB_DEPLOY_KEY_FILE
+          echo "${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}" > $WEB_DEPLOY_KEY_FILE
           chmod 600 $WEB_DEPLOY_KEY_FILE
           export GIT_SSH_COMMAND="ssh -i $WEB_DEPLOY_KEY_FILE"
 
