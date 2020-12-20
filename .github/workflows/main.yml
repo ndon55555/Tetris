@@ -43,7 +43,7 @@ jobs:
         run: docker-compose run gradle-assemble-web
 
       - name: Publish Web Files
-        uses: dmnemec/copy_file_to_another_repo_action@v1
+        uses: dmnemec/copy_file_to_another_repo_action@v1.0.4
         env:
           API_TOKEN_GITHUB: ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}
         with:
