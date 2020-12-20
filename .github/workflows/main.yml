@@ -53,13 +53,11 @@ jobs:
           chmod 600 "$WEB_DEPLOY_KEY_FILE"
           export GIT_SSH_COMMAND="ssh -i $WEB_DEPLOY_KEY_FILE"
 
-      - run: ls -al "${{ env.WEB_DIR }}" # TODO delete this
-
       - name: Publish Web Files
         uses: dmnemec/copy_file_to_another_repo_action@v1.0.4
         with:
           destination_branch: "master"
           destination_repo: "ndon55555/webtris"
-          source_file: "${{ env.WEB_DIR }}/"*
+          source_file: "${{ env.WEB_DIR }}/"\*
           user_email: "ndon55555@gmail.com"
           user_name: "ndon55555"
