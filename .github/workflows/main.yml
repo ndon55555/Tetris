@@ -19,10 +19,12 @@ jobs:
       - run: docker-compose run gradle-build
 
   deploy:
+    name: Deploy Webtris
     if: ${{ github.ref }} == "refs/heads/multiplatform"
     needs: test
     runs-on: ubuntu-18.04
     steps:
+      - run: echo "${{ github.ref }}"
       - uses: actions/checkout@v2
 
       - name: Setup JDK
@@ -42,10 +44,17 @@ jobs:
       - name: Generate Web Files
         run: docker-compose run gradle-assemble-web
 
+      - name: Create Deploy Key File
+        run: echo "WEB_DEPLOY_KEY=$(mktemp)" >> "$GITHUB_ENV"
+
+      - name: Setup Git SSH with Deploy Key
+        run: |
+          echo "$secrets.WEBTRIS_PRIVATE_DEPLOY_KEY" > "$WEB_DEPLOY_KEY"
+          chmod 600 "$WEB_DEPLOY_KEY"
+          export GIT_SSH_COMMAND=\"ssh -i $WEB_DEPLOY_KEY\"
+
       - name: Publish Web Files
         uses: dmnemec/copy_file_to_another_repo_action@v1.0.4
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}
         with:
           destination_branch: "master"
           destination_repo: "ndon55555/webtris"
