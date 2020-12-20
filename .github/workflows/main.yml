@@ -19,7 +19,7 @@ jobs:
       - run: docker-compose run gradle-build
 
   deploy:
-    if: ${{ github.ref == "" }}
+    if: ${{ github.ref }} == "refs/heads/multiplatform"
     needs: test
     runs-on: ubuntu-18.04
     steps:
