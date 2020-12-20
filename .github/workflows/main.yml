@@ -20,7 +20,7 @@ jobs:
 
   deploy:
     name: Deploy Webtris
-    if: ${{ github.ref == "refs/heads/multiplatform" }}
+    if: ${{ github.ref == 'refs/heads/multiplatform' }}
     needs: test
     runs-on: ubuntu-18.04
     steps:
