@@ -44,20 +44,10 @@ jobs:
       - name: Generate Web Files
         run: docker-compose run gradle-assemble-web
 
-      - name: Create Deploy Key File
-        run: echo "WEB_DEPLOY_KEY_FILE=$(mktemp)" >> "$GITHUB_ENV"
-
-      - name: Setup Git SSH with Deploy Key
-        run: |
-          echo "${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}" > "$WEB_DEPLOY_KEY_FILE"
-          chmod 600 "$WEB_DEPLOY_KEY_FILE"
-          export GIT_SSH_COMMAND="ssh -i $WEB_DEPLOY_KEY_FILE"
-
       - name: Publish Web Files
-        uses: dmnemec/copy_file_to_another_repo_action@v1.0.4
-        with:
-          destination_branch: "master"
-          destination_repo: "ndon55555/webtris"
-          source_file: "${{ env.WEB_DIR }}"/*
-          user_email: "ndon55555@gmail.com"
-          user_name: "ndon55555"
+        uses: s0/git-publish-subdir-action@v2.4.0
+        env:
+          REPO: git@github.com:ndon55555/webtris.git
+          BRANCH: master
+          FOLDER: ${{ env.WEB_DIR }}
+          SSH_PRIVATE_KEY: ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}
