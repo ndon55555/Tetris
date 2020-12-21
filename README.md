@@ -1,5 +1,5 @@
 # Tetris
-[![Build Status](https://travis-ci.org/ndon55555/Tetris.svg?branch=multiplatform)](https://travis-ci.org/ndon55555/Tetris)
+![Build Status](https://github.com/ndon55555/Tetris/workflows/.github/workflows/main.yml/badge.svg)
 
 ## Requirements
 * [Java 12](https://jdk.java.net/12/) on your shell path
