@@ -1,0 +1,74 @@
+on: push
+jobs:
+  pre-test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: git_diff
+        name: Look for modified files that trigger testing
+        uses: technote-space/get-diff-action@v4
+        with:
+          PATTERNS: |
+            .github/**
+            **/build.gradle.kts
+            **/*.kt
+            **/*.lockfile
+
+    outputs:
+      diff: ${{ steps.git_diff.outputs.diff }}
+
+  test:
+    runs-on: ubuntu-18.04
+    needs: pre-test
+    if: ${{ needs.pre-test.outputs.diff }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12"
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v1
+
+      - name: Ensure Gradle script executable
+        run: chmod +x ./gradlew
+
+      - name: Run tests
+        run: docker-compose run gradle-build
+
+  deploy:
+    name: Deploy Webtris
+    needs: test
+    if: ${{ github.ref == 'refs/heads/multiplatform' }}
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12"
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v1
+
+      - name: Ensure Gradle script executable
+        run: chmod +x ./gradlew
+
+      - name: Create web files dir
+        run: echo "WEB_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
+
+      - name: Generate feb files
+        run: docker-compose run gradle-assemble-web
+
+      - name: Publish web files
+        uses: s0/git-publish-subdir-action@v2.4.0
+        env:
+          REPO: git@github.com:ndon55555/webtris.git
+          BRANCH: master
+          FOLDER: ${{ env.WEB_DIR }}
+          SSH_PRIVATE_KEY: ${{ secrets.WEBTRIS_PRIVATE_DEPLOY_KEY }}
+          SKIP_EMPTY_COMMITS: true
