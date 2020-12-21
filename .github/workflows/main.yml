@@ -45,7 +45,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/multiplatform' }}
     runs-on: ubuntu-18.04
     steps:
-      - run: echo "${{ github.ref }}"
       - uses: actions/checkout@v2
 
       - name: Setup JDK
