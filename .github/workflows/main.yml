@@ -23,6 +23,8 @@ jobs:
     needs: pre-test
     if: ${{ needs.pre-test.outputs.diff }}
     steps:
+      - uses: actions/checkout@v2
+
       - name: Setup Gradle
         uses: ./.github/actions/setup-gradle
 
@@ -35,11 +37,10 @@ jobs:
     if: ${{ github.ref == 'refs/heads/multiplatform' }}
     runs-on: ubuntu-18.04
     steps:
+      - uses: actions/checkout@v2
+
       - name: Setup Gradle
         uses: ./.github/actions/setup-gradle
-
-      - name: Create web files dir
-        run: echo "WEB_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
 
       - name: Create and set web files dir
         uses: ./.github/actions/set-env
