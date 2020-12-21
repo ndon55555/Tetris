@@ -2,12 +2,11 @@ on: push
 jobs:
   pre-test:
     runs-on: ubuntu-18.04
-    outputs:
-      diff: ${{ steps.git_diff.outputs.diff }}
     steps:
       - uses: actions/checkout@v2
 
       - id: git_diff
+        name: Look for modified files that trigger testing
         uses: technote-space/get-diff-action@v4
         with:
           PATTERNS: |
@@ -15,6 +14,9 @@ jobs:
             **/build.gradle.kts
             **/*.kt
             **/*.lockfile
+
+    outputs:
+      diff: ${{ steps.git_diff.outputs.diff }}
 
   test:
     runs-on: ubuntu-18.04
@@ -34,7 +36,8 @@ jobs:
       - name: Ensure Gradle script executable
         run: chmod +x ./gradlew
 
-      - run: docker-compose run gradle-build
+      - name: Run tests
+        run: docker-compose run gradle-build
 
   deploy:
     name: Deploy Webtris
@@ -56,13 +59,13 @@ jobs:
       - name: Ensure Gradle script executable
         run: chmod +x ./gradlew
 
-      - name: Create Web Files Dir
+      - name: Create web files dir
         run: echo "WEB_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
 
-      - name: Generate Web Files
+      - name: Generate feb files
         run: docker-compose run gradle-assemble-web
 
-      - name: Publish Web Files
+      - name: Publish web files
         uses: s0/git-publish-subdir-action@v2.4.0
         env:
           REPO: git@github.com:ndon55555/webtris.git
