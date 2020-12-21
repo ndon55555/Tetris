@@ -1,0 +1,15 @@
+name: "Set Environment Variable"
+description: "Set an environment variable that can be used in the rest of a job"
+
+inputs:
+  name:
+    description: "The environment variable to set"
+    required: true
+  value:
+    description: "The value of the environment variable"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - run: echo "${{ inputs.name }}=${{ inputs.value }}" >> "$GITHUB_ENV"
