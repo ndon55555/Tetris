@@ -7,7 +7,7 @@ jobs:
 
       - uses: technote-space/get-diff-action@v4
         with:
-          PATTERN: |
+          PATTERNS: |
             .github/**
             **/build.gradle.kts
             **/*.kt
