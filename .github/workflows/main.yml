@@ -13,11 +13,10 @@ jobs:
             **/*.kt
             **/*.lockfile
 
-      # TODO delete the following
-      - run: echo ${{ env.GIT_DIFF }}
-
   test:
     runs-on: ubuntu-18.04
+    needs: pre-test
+    if: ${{ env.GIT_DIFF }}
     steps:
       - uses: actions/checkout@v2
 
@@ -36,8 +35,8 @@ jobs:
 
   deploy:
     name: Deploy Webtris
-    if: ${{ github.ref == 'refs/heads/multiplatform' }}
     needs: test
+    if: ${{ github.ref == 'refs/heads/multiplatform' }}
     runs-on: ubuntu-18.04
     steps:
       - run: echo "${{ github.ref }}"
