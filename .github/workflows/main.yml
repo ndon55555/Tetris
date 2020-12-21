@@ -2,10 +2,13 @@ on: push
 jobs:
   pre-test:
     runs-on: ubuntu-18.04
+    outputs:
+      diff: ${{ steps.git_diff.outputs.diff }}
     steps:
       - uses: actions/checkout@v2
 
-      - uses: technote-space/get-diff-action@v4
+      - id: git_diff
+        uses: technote-space/get-diff-action@v4
         with:
           PATTERNS: |
             .github/**
@@ -16,7 +19,7 @@ jobs:
   test:
     runs-on: ubuntu-18.04
     needs: pre-test
-    if: ${{ env.GIT_DIFF }}
+    if: ${{ needs.pre-test.outputs.diff }}
     steps:
       - uses: actions/checkout@v2
 
