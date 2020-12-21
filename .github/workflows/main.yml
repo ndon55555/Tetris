@@ -1,5 +1,19 @@
 on: push
 jobs:
+  pre-test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: technote-space/get-diff-action@v4
+        with:
+          PATTERN: |
+            .github/**
+            **/build.gradle.kts
+            **/*.kt
+            **/*.lockfile
+
+      # TODO delete the following
+      - run: echo ${{ env.GIT_DIFF }}
+
   test:
     runs-on: ubuntu-18.04
     steps:
