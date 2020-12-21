@@ -23,8 +23,18 @@ jobs:
     needs: pre-test
     if: ${{ needs.pre-test.outputs.diff }}
     steps:
-      - name: Setup Gradle
-        uses: ./.github/actions/setup-gradle
+      - uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12"
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v1
+
+      - name: Ensure Gradle script executable
+        run: chmod +x ./gradlew
 
       - name: Run tests
         run: docker-compose run gradle-build
@@ -35,17 +45,22 @@ jobs:
     if: ${{ github.ref == 'refs/heads/multiplatform' }}
     runs-on: ubuntu-18.04
     steps:
-      - name: Setup Gradle
-        uses: ./.github/actions/setup-gradle
+      - run: echo "${{ github.ref }}"
+      - uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12"
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v1
+
+      - name: Ensure Gradle script executable
+        run: chmod +x ./gradlew
 
       - name: Create web files dir
         run: echo "WEB_DIR=$(mktemp -d)" >> "$GITHUB_ENV"
-
-      - name: Create and set web files dir
-        uses: ./.github/actions/set-env
-        with:
-          name: "WEB_DIR"
-          value: "$(mktemp -d)"
 
       - name: Generate feb files
         run: docker-compose run gradle-assemble-web
