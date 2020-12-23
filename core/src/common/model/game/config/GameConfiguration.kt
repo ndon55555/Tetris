@@ -21,6 +21,15 @@ class GameConfiguration {
             field = value
         }
 
+    var softDropAutoRepeatRate: Int = 30
+        set(value) {
+            if (value < 0) {
+                throw IllegalArgumentException("Soft drop auto repeat rate must be nonnegative")
+            }
+
+            field = value
+        }
+
     var autoDropDelay: Int = 1000
         set(value) {
             if (value <= 0) {
