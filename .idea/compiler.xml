@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="12">
       <module name="com.github.ndon55555.tetris.jvmMain" target="12" />
       <module name="com.github.ndon55555.tetris.jvmTest" target="12" />
       <module name="tetris.browser.main" target="12" />
