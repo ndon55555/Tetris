@@ -73,9 +73,13 @@ fun loadGame() {
     val controller: TetrisController = ControllerImpl()
     val view: TetrisUI = TetrisWeb()
 
+    val startGame = {
+        controller.run(BaseGame(BoardImpl(), GameConfiguration()), view)
+    }
+
     val restartGame = {
         controller.stop()
-        controller.run(BaseGame(BoardImpl(), GameConfiguration()), view)
+        startGame()
     }
 
     val keysToCommand = { key: String ->
@@ -111,5 +115,5 @@ fun loadGame() {
         restartButton.blur() // remove focus after the button is pressed so key presses don't activate it
     }
 
-    controller.run(BaseGame(BoardImpl(), GameConfiguration()), view)
+    startGame()
 }

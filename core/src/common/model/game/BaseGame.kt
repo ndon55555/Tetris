@@ -26,7 +26,7 @@ expect fun timeStamp(): Duration
 @ExperimentalTime
 open class BaseGame(board: Board, val config: GameConfiguration) : Game {
     var gameOver = false
-    private var board: Board = object : Board {
+    private val board: Board = object : Board {
         override fun areValidCells(vararg cells: Cell): Boolean = board.areValidCells(*cells)
 
         override fun placeCells(vararg cells: Cell) {
