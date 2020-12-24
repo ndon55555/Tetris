@@ -56,7 +56,7 @@ jobs:
           chmod +x ktlint
 
       - name: Run ktlint
-        run: ./ktlint --reporter=checkstyle,output=${{ env.KTLINT_REPORT_FILE }}
+        run: ./ktlint --reporter=checkstyle,output=${{ env.KTLINT_REPORT_FILE }} || true
 
       - name: Generate annotations from report
         uses: yutailang0119/action-ktlint@v1.0.0
