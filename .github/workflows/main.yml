@@ -30,6 +30,9 @@ jobs:
         with:
           java-version: "12"
 
+      - name: Set Gradle home
+        run: echo "GRADLE_HOME=$HOME/.gradle" >> "$GITHUB_ENV"
+
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
 
@@ -51,6 +54,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: "12"
+
+      - name: Set Gradle home
+        run: echo "GRADLE_HOME=$HOME/.gradle" >> "$GITHUB_ENV"
 
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
