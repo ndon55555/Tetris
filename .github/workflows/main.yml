@@ -54,7 +54,7 @@ jobs:
           chmod +x ktlint
 
       - name: Run ktlint
-        run: ktlint --reporter "plain?group_by_file" || true
+        run: ./ktlint --reporter "plain?group_by_file" || true
 
   deploy:
     name: Deploy Webtris
