@@ -10,11 +10,9 @@ apply {
 
 val backEndDir by extra(projectDir.resolve("src/backEnd"))
 val frontEndDir by extra(projectDir.resolve("src/frontEnd"))
-val webDir by extra(
-    System.getenv("WEB_DIR")?.let {
-        File(it)
-    } ?: projectDir.resolve("artifacts/web")
-)
+val webDir by extra(System.getenv("WEB_DIR")?.let {
+    File(it)
+} ?: projectDir.resolve("artifacts/web"))
 val devMode by extra((System.getenv("DEV_MODE") ?: "true").toBoolean())
 
 kotlin {

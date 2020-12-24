@@ -8,16 +8,13 @@ actual fun runAtFixedRate(period: Long, shouldContinue: () -> Boolean, event: ()
     object {
         val gameLoop = Executors.newSingleThreadScheduledExecutor {
             Thread(it).apply { isDaemon = true }
-        }.scheduleAtFixedRate(
-            {
-                if (shouldContinue()) {
-                    event()
-                } else {
-                    stopGameLoop()
-                }
-            },
-            0, period, TimeUnit.MILLISECONDS
-        )
+        }.scheduleAtFixedRate({
+            if (shouldContinue()) {
+                event()
+            } else {
+                stopGameLoop()
+            }
+        }, 0, period, TimeUnit.MILLISECONDS)
 
         fun stopGameLoop() {
             gameLoop.cancel(true)

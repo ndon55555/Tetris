@@ -55,11 +55,11 @@ fun javaFXDependencies(modules: List<String>, version: String): List<String> {
     val platform = currentOS.let {
         when {
             it.isWindows -> "win"
-            it.isLinux -> "linux"
-            it.isMacOsX -> "mac"
-            else -> ""
+            it.isLinux   -> "linux"
+            it.isMacOsX  -> "mac"
+            else         -> ""
         }
     }
 
-    return modules.map { "org.openjfx:javafx-$it:$version:$platform" }
+    return modules.map { "org.openjfx:javafx-${it}:${version}:${platform}" }
 }
