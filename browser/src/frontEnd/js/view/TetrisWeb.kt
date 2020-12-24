@@ -98,13 +98,13 @@ class TetrisWeb : TetrisUI {
     }
 
     private fun htmlColor(color: CellColor): String = when (color) {
-        CellColor.GREEN      -> "green"
-        CellColor.RED        -> "red"
-        CellColor.DARK_BLUE  -> "blue"
-        CellColor.ORANGE     -> "orange"
+        CellColor.GREEN -> "green"
+        CellColor.RED -> "red"
+        CellColor.DARK_BLUE -> "blue"
+        CellColor.ORANGE -> "orange"
         CellColor.LIGHT_BLUE -> "cyan"
-        CellColor.YELLOW     -> "yellow"
-        CellColor.PURPLE     -> "purple"
-        CellColor.NULL       -> "grey"
+        CellColor.YELLOW -> "yellow"
+        CellColor.PURPLE -> "purple"
+        CellColor.NULL -> "grey"
     }
 }

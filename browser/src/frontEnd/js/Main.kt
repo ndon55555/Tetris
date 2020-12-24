@@ -84,14 +84,14 @@ fun loadGame() {
 
     val keysToCommand = { key: String ->
         when (key) {
-            "arrowleft"  -> Command.LEFT
+            "arrowleft" -> Command.LEFT
             "arrowright" -> Command.RIGHT
-            "arrowup"    -> Command.ROTATE_CW
-            "arrowdown"  -> Command.SOFT_DROP
-            "z"          -> Command.ROTATE_CCW
-            " "          -> Command.HARD_DROP
-            "shift"      -> Command.HOLD
-            else         -> Command.DO_NOTHING
+            "arrowup" -> Command.ROTATE_CW
+            "arrowdown" -> Command.SOFT_DROP
+            "z" -> Command.ROTATE_CCW
+            " " -> Command.HARD_DROP
+            "shift" -> Command.HOLD
+            else -> Command.DO_NOTHING
         }
     }
 
