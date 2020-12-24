@@ -11,7 +11,7 @@ jobs:
         with:
           PATTERNS: |
             .github/**
-            **/build.gradle.kts
+            **/*.kts
             **/*.kt
             **/*.lockfile
 
@@ -35,12 +35,35 @@ jobs:
 
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
+        with:
+          gradle-distribution-sha-256-sum-warning: false
 
       - name: Ensure Gradle script executable
         run: chmod +x ./gradlew
 
       - name: Run tests
         run: docker-compose run gradle-build
+
+  lint:
+    runs-on: ubuntu-18.04
+    needs: pre-test
+    env:
+      KTLINT_REPORT_FILE: "./build/output.xml"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup ktlint
+        run: |
+          curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.40.0/ktlint
+          chmod +x ktlint
+
+      - name: Run ktlint
+        run: ./ktlint --reporter=checkstyle,output=${{ env.KTLINT_REPORT_FILE }} || true
+
+      - name: Generate annotations from report
+        uses: yutailang0119/action-ktlint@v1.0.0
+        with:
+          xml_path: ${{ env.KTLINT_REPORT_FILE }}
 
   deploy:
     name: Deploy Webtris
@@ -60,6 +83,8 @@ jobs:
 
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
+        with:
+          gradle-distribution-sha-256-sum-warning: false
 
       - name: Ensure Gradle script executable
         run: chmod +x ./gradlew

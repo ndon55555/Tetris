@@ -14,8 +14,8 @@ class BoardImpl : Board {
     override fun getPlacedCells(): Set<Cell> = placedCells.toSet()
 
     override fun areValidCells(vararg cells: Cell): Boolean = cells.all {
-        it.row in 0 until BOARD_HEIGHT && it.col in 0 until BOARD_WIDTH
-                && placedCells.all { cell -> it !== cell && !cell.sharesPositionWith(it) }
+        it.row in 0 until BOARD_HEIGHT && it.col in 0 until BOARD_WIDTH &&
+            placedCells.all { cell -> it !== cell && !cell.sharesPositionWith(it) }
     }
 
     override fun placeCells(vararg cells: Cell) {

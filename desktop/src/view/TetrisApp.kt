@@ -105,30 +105,33 @@ class BoardView : View("Tetris"), TetrisUI {
     override fun onDock() {
         var keyToCommand = { key: KeyCode ->
             when (key) {
-                KeyCode.Z     -> Command.ROTATE_CCW
-                KeyCode.UP   -> Command.ROTATE_CW
+                KeyCode.Z -> Command.ROTATE_CCW
+                KeyCode.UP -> Command.ROTATE_CW
                 KeyCode.LEFT -> Command.LEFT
-                KeyCode.RIGHT      -> Command.RIGHT
-                KeyCode.DOWN  -> Command.SOFT_DROP
+                KeyCode.RIGHT -> Command.RIGHT
+                KeyCode.DOWN -> Command.SOFT_DROP
                 KeyCode.SPACE -> Command.HARD_DROP
                 KeyCode.SHIFT -> Command.HOLD
-                else    -> Command.DO_NOTHING
+                else -> Command.DO_NOTHING
             }
         }
 
         // to understand why this handler is set here instead of on the root,
         // see https://stackoverflow.com/questions/52356548/tornadofx-key-press-listener-issues
-        currentStage?.addEventHandler(KeyEvent.ANY, object : EventHandler<KeyEvent> {
-            override fun handle(event: KeyEvent?) {
-                if (event != null) {
-                    when (event.eventType) {
-                        KeyEvent.KEY_PRESSED  -> controller.handleCmdPress(keyToCommand(event.code))
-                        KeyEvent.KEY_RELEASED -> controller.handleCmdRelease(keyToCommand(event.code))
-                        else                  -> return
+        currentStage?.addEventHandler(
+            KeyEvent.ANY,
+            object : EventHandler<KeyEvent> {
+                override fun handle(event: KeyEvent?) {
+                    if (event != null) {
+                        when (event.eventType) {
+                            KeyEvent.KEY_PRESSED -> controller.handleCmdPress(keyToCommand(event.code))
+                            KeyEvent.KEY_RELEASED -> controller.handleCmdRelease(keyToCommand(event.code))
+                            else -> return
+                        }
                     }
                 }
             }
-        })
+        )
         val view = this
         controller.run(model, view)
         super.onDock()
@@ -184,14 +187,14 @@ internal fun foregroundCell(c: Cell): Rectangle =
     }
 
 internal fun getPaint(c: CellColor): Paint = when (c) {
-    CellColor.GREEN      -> Paint.valueOf("green")
-    CellColor.RED        -> Paint.valueOf("red")
-    CellColor.DARK_BLUE  -> Color(0.12, 0.29, 0.58, 1.0)
-    CellColor.ORANGE     -> Paint.valueOf("orange")
+    CellColor.GREEN -> Paint.valueOf("green")
+    CellColor.RED -> Paint.valueOf("red")
+    CellColor.DARK_BLUE -> Color(0.12, 0.29, 0.58, 1.0)
+    CellColor.ORANGE -> Paint.valueOf("orange")
     CellColor.LIGHT_BLUE -> Paint.valueOf("teal")
-    CellColor.YELLOW     -> Paint.valueOf("yellow")
-    CellColor.PURPLE     -> Paint.valueOf("purple")
-    CellColor.NULL       -> Paint.valueOf("grey")
+    CellColor.YELLOW -> Paint.valueOf("yellow")
+    CellColor.PURPLE -> Paint.valueOf("purple")
+    CellColor.NULL -> Paint.valueOf("grey")
 }
 
 internal fun previewBackground(): GridPane {
@@ -199,10 +202,13 @@ internal fun previewBackground(): GridPane {
 
     repeat(PREVIEW_BOX_SIZE) { row ->
         repeat(PREVIEW_BOX_SIZE) { col ->
-            g.add(backgroundCell().apply {
-                width *= PREVIEW_SCALE
-                height *= PREVIEW_SCALE
-            }, col, row)
+            g.add(
+                backgroundCell().apply {
+                    width *= PREVIEW_SCALE
+                    height *= PREVIEW_SCALE
+                },
+                col, row
+            )
         }
     }
 
@@ -219,8 +225,11 @@ internal fun preview(cells: Set<Cell>): GridPane = previewBackground().apply {
     val dRow = minRow - (PREVIEW_BOX_SIZE - (maxRow - minRow + 1)) / 2
     val dCol = minCol - (PREVIEW_BOX_SIZE - (maxCol - minCol + 1)) / 2
 
-    for (c in cells) add(foregroundCell(c).apply {
-        height *= PREVIEW_SCALE
-        width *= PREVIEW_SCALE
-    }, c.col - dCol, c.row - dRow)
+    for (c in cells) add(
+        foregroundCell(c).apply {
+            height *= PREVIEW_SCALE
+            width *= PREVIEW_SCALE
+        },
+        c.col - dCol, c.row - dRow
+    )
 }
