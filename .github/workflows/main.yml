@@ -11,7 +11,7 @@ jobs:
         with:
           PATTERNS: |
             .github/**
-            **/build.gradle.kts
+            **/*.kts
             **/*.kt
             **/*.lockfile
 
@@ -41,6 +41,20 @@ jobs:
 
       - name: Run tests
         run: docker-compose run gradle-build
+
+  lint:
+    runs-on: ubuntu-18.04
+    needs: pre-test
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup ktlint
+        run: |
+          curl -sSLO https://github.com/pinterest/ktlint/releases/download/0.40.0/ktlint
+          chmod +x ktlint
+
+      - name: Run ktlint
+        run: ktlint --reporter "plain?group_by_file" || true
 
   deploy:
     name: Deploy Webtris
