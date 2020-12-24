@@ -11,17 +11,19 @@ services:
       - $GRADLE_HOME:$GRADLE_HOME
     command: >
       sh -c "cd /repo
-      && ./gradlew build --gradle-user-home /home/.gradle --stacktrace --build-cache --parallel
-      && ./gradlew --stop"
+      && ./gradlew build --gradle-user-home $GRADLE_HOME --stacktrace --build-cache --parallel"
+
   # Create browser files
   gradle-assemble-web:
     image: openjdk:12
     environment:
       - TERM=dumb
       - WEB_DIR=$WEB_DIR
+      - DEV_MODE=false
     volumes:
       - .:/repo
       - $GRADLE_HOME:$GRADLE_HOME
       - $WEB_DIR:$WEB_DIR
     command: >
-      sh -c "cd /repo && DEV_MODE=false ./gradlew :browser:assembleWeb --build-cache"
+      sh -c "cd /repo
+      && ./gradlew :browser:assembleWeb --gradle-user-home $GRADLE_HOME --build-cache"
