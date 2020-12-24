@@ -35,6 +35,8 @@ jobs:
 
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
+        with:
+          gradle-distribution-sha-256-sum-warning: false
 
       - name: Ensure Gradle script executable
         run: chmod +x ./gradlew
@@ -81,6 +83,8 @@ jobs:
 
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
+        with:
+          gradle-distribution-sha-256-sum-warning: false
 
       - name: Ensure Gradle script executable
         run: chmod +x ./gradlew
