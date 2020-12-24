@@ -45,6 +45,8 @@ jobs:
   lint:
     runs-on: ubuntu-18.04
     needs: pre-test
+    env:
+      KTLINT_REPORT_FILE: "./build/output.xml"
     steps:
       - uses: actions/checkout@v2
 
@@ -54,7 +56,12 @@ jobs:
           chmod +x ktlint
 
       - name: Run ktlint
-        run: ./ktlint --color --reporter "plain?group_by_file" || true
+        run: ./ktlint --reporter=checkstyle,output=${{ env.KTLINT_REPORT_FILE }}
+
+      - name: Generate annotations from report
+        uses: yutailang0119/action-ktlint@v1.0.0
+        with:
+          xml_path: ${{ env.KTLINT_REPORT_FILE }}
 
   deploy:
     name: Deploy Webtris
