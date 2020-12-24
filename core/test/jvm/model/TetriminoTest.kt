@@ -92,13 +92,11 @@ open class TetriminoTest {
             Triple(
                 "Rotate 90 CW * 2 orientation",
                 Orientation.DOWN,
-                { p: Tetrimino -> p.rotate90CW().rotate90CW().orientation() }
-            ),
+                { p: Tetrimino -> p.rotate90CW().rotate90CW().orientation() }),
             Triple(
                 "Rotate 90 CCW * 2 orientation",
                 Orientation.DOWN,
-                { p: Tetrimino -> p.rotate90CCW().rotate90CCW().orientation() }
-            )
+                { p: Tetrimino -> p.rotate90CCW().rotate90CCW().orientation() })
         )
 
         return allStandardPieces.fold(mutableListOf()) { tests, piece ->

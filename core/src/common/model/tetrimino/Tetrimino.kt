@@ -99,119 +99,91 @@ sealed class StandardTetrimino(private val t: Tetrimino) : Tetrimino {
 
 class S private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-            setOf(
-                CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2),
-                CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
+                    setOf(CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2),
+                            CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.GREEN, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = S(t)
 }
 
 class Z private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-            setOf(
-                CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 2),
-                CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
+                    setOf(CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 2),
+                            CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.RED, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = Z(t)
 }
 
 class J private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-            setOf(
-                CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 2),
-                CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2),
-                CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
+                    setOf(CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 2),
+                            CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2),
+                            CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.DARK_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = J(t)
 }
 
 class L private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-            setOf(
-                CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2),
-                CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2),
-                CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
+                    setOf(CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2),
+                            CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2),
+                            CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.ORANGE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = L(t)
 }
 
 class O private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 1.5, (BOARD_WIDTH - 1) / 2.0),
-            setOf(
-                CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2),
-                CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 1.5, (BOARD_WIDTH - 1) / 2.0),
+                    setOf(CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2),
+                            CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.YELLOW, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = O(t)
 }
 
 class I private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 0.5, (BOARD_WIDTH - 1) / 2.0),
-            setOf(
-                CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2),
-                CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2),
-                CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 + 1)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 0.5, (BOARD_WIDTH - 1) / 2.0),
+                    setOf(CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2),
+                            CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2),
+                            CellImpl(CellColor.LIGHT_BLUE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 + 1)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = I(t)
 }
 
 class T private constructor(t: Tetrimino) : StandardTetrimino(t) {
     constructor() : this(
-        TetriminoImpl(
-            Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
-            setOf(
-                CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2),
-                CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
-                CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)
-            ),
-            Orientation.UP
-        )
-    )
+            TetriminoImpl(
+                    Posn(FIRST_VISIBLE_ROW - 1.0, (BOARD_WIDTH / 2 - 1).toDouble()),
+                    setOf(CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 2, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 2),
+                            CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2 - 1),
+                            CellImpl(CellColor.PURPLE, FIRST_VISIBLE_ROW - 1, BOARD_WIDTH / 2)),
+                    Orientation.UP))
 
     override fun newPiece(t: Tetrimino): StandardTetrimino = T(t)
 }
