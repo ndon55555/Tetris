@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.3.71" apply false
+    kotlin("multiplatform") version "1.5.10" apply false
 }
 
 allprojects {
@@ -7,7 +7,7 @@ allprojects {
 
     tasks {
         withType<Wrapper> {
-            gradleVersion = "6.5.1"
+            gradleVersion = "7.0.2"
         }
     }
 }

@@ -22,7 +22,6 @@ kotlin {
             kotlin.srcDir("src")
             dependencies {
                 implementation(project(":core"))
-                implementation(kotlin("stdlib-jdk8"))
                 javaFXDependencies(listOf("base", "controls", "graphics"), "12.+").forEach {
                     implementation(it)
                 }

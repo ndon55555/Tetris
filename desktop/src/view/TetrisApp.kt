@@ -218,10 +218,10 @@ internal fun previewBackground(): GridPane {
 internal fun preview(cells: Set<Cell>): GridPane = previewBackground().apply {
     val rows = cells.map { it.row }
     val cols = cells.map { it.col }
-    val minRow = rows.min() ?: 0
-    val maxRow = rows.max() ?: PREVIEW_BOX_SIZE
-    val minCol = cols.min() ?: 0
-    val maxCol = cols.max() ?: PREVIEW_BOX_SIZE
+    val minRow = rows.minOrNull() ?: 0
+    val maxRow = rows.maxOrNull() ?: PREVIEW_BOX_SIZE
+    val minCol = cols.minOrNull() ?: 0
+    val maxCol = cols.maxOrNull() ?: PREVIEW_BOX_SIZE
     val dRow = minRow - (PREVIEW_BOX_SIZE - (maxRow - minRow + 1)) / 2
     val dCol = minCol - (PREVIEW_BOX_SIZE - (maxCol - minCol + 1)) / 2
 

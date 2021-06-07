@@ -1,7 +1,11 @@
 kotlin {
-    js {
-        val main by compilations.getting {
-            kotlinOptions {
+    js(IR) {
+        browser()
+        binaries.executable()
+        compilations {
+            val main by getting
+
+            main.kotlinOptions {
                 moduleKind = "umd"
             }
         }
@@ -24,15 +28,12 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             kotlin.srcDir("src/common")
-            dependencies {
-                implementation(kotlin("stdlib-common"))
-            }
         }
 
         val commonTest by getting {
             kotlin.srcDir("test/common")
             dependencies {
-                implementation(kotlin("test-common"))
+                implementation(kotlin("test"))
                 implementation(kotlin("test-annotations-common"))
             }
         }
@@ -41,7 +42,6 @@ kotlin {
             kotlin.srcDir("src/js")
             dependencies {
                 dependsOn(commonMain)
-                implementation(kotlin("stdlib-js"))
             }
         }
 
@@ -49,7 +49,6 @@ kotlin {
             kotlin.srcDir("src/jvm")
             dependencies {
                 dependsOn(commonMain)
-                implementation(kotlin("stdlib-jdk8"))
             }
         }
 
