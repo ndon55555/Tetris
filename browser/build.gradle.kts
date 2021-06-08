@@ -23,6 +23,10 @@ kotlin {
             webpackTask {
                 outputFileName = "browser-game.js"
             }
+
+            testTask {
+                enabled = false
+            }
         }
 
         binaries.executable()
